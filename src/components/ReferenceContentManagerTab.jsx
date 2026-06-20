@@ -71,7 +71,7 @@ export default function ReferenceContentManagerTab() {
     <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16 }}>
       <div>
         <button
-          className="btn btn-secondary"
+          className="btn btn-primary"
           style={{ width: '100%', marginBottom: 10 }}
           onClick={startNewPage}
         >
@@ -81,10 +81,22 @@ export default function ReferenceContentManagerTab() {
           <div
             key={p.pageKey}
             onClick={() => selectPage(p)}
-            className={`nav-item${selectedKey === p.pageKey ? ' active' : ''}`}
-            style={{ color: selectedKey === p.pageKey ? '#4338ca' : '#334155', cursor: 'pointer' }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              marginBottom: '4px',
+              cursor: 'pointer',
+              fontSize: 13,
+              background: selectedKey === p.pageKey ? '#e0e7ff' : 'transparent',
+              color: selectedKey === p.pageKey ? '#4338ca' : '#334155',
+              fontWeight: selectedKey === p.pageKey ? '600' : '400',
+              transition: 'all 0.15s'
+            }}
           >
-            <span className="icon">{p.icon}</span> {p.title}
+            <span className="icon" style={{ fontSize: '16px' }}>{p.icon}</span> {p.title}
           </div>
         ))}
       </div>

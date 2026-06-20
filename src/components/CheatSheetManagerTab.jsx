@@ -71,15 +71,13 @@ export default function CheatSheetManagerTab() {
   if (isLoading) return <div className="loading-state">Loading cheat sheet items…</div>;
   if (isError) return <div className="error-state">Couldn't load cheat sheet items.</div>;
 
-  // Backend shape (GET /api/cheatsheet): { categoryKey: [item, item, ...] },
-  // where each item itself carries categoryLabel/categoryIcon.
   const categories = Object.entries(grouped || {});
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 16 }}>
       <div>
         <button
-          className="btn btn-secondary"
+          className="btn btn-primary"
           style={{ width: '100%', marginBottom: 10 }}
           onClick={() => startNewItem(categories[0]?.[0])}
         >
@@ -91,15 +89,24 @@ export default function CheatSheetManagerTab() {
           const icon = items[0]?.categoryIcon || '';
           return (
             <div key={categoryKey} style={{ marginBottom: 14 }}>
-              <div className="sidebar-label" style={{ padding: '4px 0' }}>
+              <div className="sidebar-label" style={{ padding: '4px 0', marginBottom: '4px' }}>
                 {icon} {label}
               </div>
               {items.map((item) => (
                 <div
                   key={item.id}
                   onClick={() => selectItem(item)}
-                  className={`nav-item${selectedId === item.id ? ' active' : ''}`}
-                  style={{ color: selectedId === item.id ? '#4338ca' : '#334155', cursor: 'pointer', fontSize: 12 }}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    marginBottom: '4px',
+                    cursor: 'pointer',
+                    fontSize: 13,
+                    background: selectedId === item.id ? '#e0e7ff' : 'transparent',
+                    color: selectedId === item.id ? '#4338ca' : '#334155',
+                    fontWeight: selectedId === item.id ? '600' : '400',
+                    transition: 'all 0.15s'
+                  }}
                   title={item.question}
                 >
                   {item.question?.slice(0, 40)}{item.question?.length > 40 ? '…' : ''}

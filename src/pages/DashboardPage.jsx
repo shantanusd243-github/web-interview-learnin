@@ -1,27 +1,39 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFilters } from '../context/FilterContext';
 import { getDashboardSummary } from '../api/userActivity';
+import { useTopics } from '../hooks/useQuestions';
 
-const TOPIC_TILES = [
-  { topic: 'Core Java', icon: '☕' },
-  { topic: 'Java 8', icon: '🚀' },
-  { topic: 'Collections', icon: '📦' },
-  { topic: 'Multithreading', icon: '🔄' },
-  { topic: 'String', icon: '🔤' },
-  { topic: 'Spring Boot', icon: '🍃' },
-  { topic: 'REST APIs', icon: '🌐' },
-  { topic: 'Design Patterns', icon: '🏗️' },
-  { topic: 'Microservices', icon: '🔗' },
-  { topic: 'Exception Handling', icon: '⚠️', shortLabel: 'Exceptions' },
-  { topic: 'OOP', icon: '🧬' },
-];
+// This simply maps emojis to your database strings to keep the UI looking nice.
+// If a new topic is added to the DB that isn't here, it gracefully falls back to the blue book icon.
+const getIconForTopic = (topic) => {
+  const iconMap = {
+    'Core Java': '☕',
+    'Collections': '📦',
+    'Java 8': '🚀',
+    'Multithreading': '🔄',
+    'Spring Boot': '🍃',
+    'Microservices': '🔗',
+    'Security': '🔒',
+    'JPA': '💾',
+    'SQL': '🗄️',
+    'Kafka': '📨',
+    'AWS': '☁️',
+    'Docker': '🐳',
+    'Kubernetes': '☸️',
+    'Exception Handling': '⚠️',
+    'OOP': '🧬'
+  };
+  return iconMap[topic] || '📘';
+};
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { setTopicFilter } = useFilters();
 
-  // Replace the heavy hooks with a single lightweight state
+  // FETCH TOPICS DIRECTLY FROM DATABASE
+  const { data: dbTopics } = useTopics();
+
   const [stats, setStats] = useState({
     totalQuestions: 0,
     confidentCount: 0,
@@ -30,7 +42,6 @@ export default function DashboardPage() {
     topicCounts: {}
   });
 
-  // Fetch the summary data once on mount
   useEffect(() => {
     getDashboardSummary()
       .then(data => {
@@ -42,6 +53,7 @@ export default function DashboardPage() {
   const total = stats.totalQuestions;
   const pct = (n) => (total ? (n / total) * 100 : 0);
 
+  // Instantly apply the filter and navigate to the Questions list
   const goToTopic = (topic) => {
     setTopicFilter(topic);
     navigate('/questions');
@@ -144,20 +156,35 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* --- NEW ARCHITECTURE TILES --- */}
+      <div style={{ fontSize: 14, fontWeight: 700, margin: '0 0 14px', color: '#0f172a' }}>
+        Problem Solving & Architecture
+      </div>
+      <div className="topic-grid" style={{ marginBottom: 24, gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+        <div className="topic-tile" style={{ background: '#eff6ff', borderColor: '#bfdbfe' }} onClick={() => navigate('/dsa')}>
+          <div className="topic-icon">💻</div>
+          <div className="topic-name">Data Structures & Algorithms</div>
+          <div className="topic-count" style={{ color: '#2563eb' }}>Enter DSA Module →</div>
+        </div>
+        <div className="topic-tile" style={{ background: '#f0fdfa', borderColor: '#a7f3d0' }} onClick={() => navigate('/sysdesign')}>
+          <div className="topic-icon">🏗️</div>
+          <div className="topic-name">System Design</div>
+          <div className="topic-count" style={{ color: '#059669' }}>Enter System Design Module →</div>
+        </div>
+      </div>
+
+      {/* --- THEORY TILES (FULLY DYNAMIC FROM DB) --- */}
+      <div style={{ fontSize: 14, fontWeight: 700, margin: '0 0 14px', color: '#0f172a' }}>
+        Theory Topics
+      </div>
       <div className="topic-grid">
-        {TOPIC_TILES.map(({ topic, icon, shortLabel }) => (
+        {(dbTopics || []).map((topic) => (
           <div className="topic-tile" key={topic} onClick={() => goToTopic(topic)}>
-            <div className="topic-icon">{icon}</div>
-            <div className="topic-name">{shortLabel || topic}</div>
-            {/* Fallback to 0 if the backend map doesn't contain the topic yet */}
+            <div className="topic-icon">{getIconForTopic(topic)}</div>
+            <div className="topic-name">{topic === 'Exception Handling' ? 'Exceptions' : topic}</div>
             <div className="topic-count">{stats.topicCounts[topic] || 0} questions</div>
           </div>
         ))}
-        <div className="topic-tile" onClick={() => navigate('/reference/sql')}>
-          <div className="topic-icon">🗄️</div>
-          <div className="topic-name">SQL</div>
-          <div className="topic-count">{stats.topicCounts['SQL'] || 0} queries</div>
-        </div>
       </div>
     </div>
   );

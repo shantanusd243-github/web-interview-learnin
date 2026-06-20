@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { questionsApi } from '../api/questions';
 import QuestionApprovalForm, { emptyQuestionForm, toQuestionRequestPayload } from './QuestionApprovalForm';
@@ -7,8 +7,6 @@ function csvJoin(arr) {
   return (arr || []).join(', ');
 }
 
-/** Converts a QuestionResponse (from the list) into the flat form shape
- *  QuestionApprovalForm expects, mirroring buildInitialFromSubmission's shape. */
 function buildFormFromQuestion(q) {
   return {
     questionType: q.questionType,
@@ -101,14 +99,50 @@ export default function QuestionsManagerTab() {
   const queryClient = useQueryClient();
   const [typeFilter, setTypeFilter] = useState('');
   const [search, setSearch] = useState('');
-  const [editing, setEditing] = useState(null); // null = closed, {} = create, question obj = edit
+  const [editing, setEditing] = useState(null);
   const [creating, setCreating] = useState(false);
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['admin-questions-list', typeFilter, search],
-    queryFn: () => questionsApi.search({ type: typeFilter || undefined, search: search || undefined, page: 0, size: 100 }),
+  const [page, setPage] = useState(0);
+  const [accumulatedQuestions, setAccumulatedQuestions] = useState([]);
+  const [hasMore, setHasMore] = useState(true);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setPage(0);
+    setAccumulatedQuestions([]);
+    setHasMore(true);
+  }, [typeFilter, search]);
+
+  const { data, isLoading, isError, isFetching } = useQuery({
+    queryKey: ['admin-questions-list', typeFilter, search, page],
+    queryFn: () => questionsApi.search({ type: typeFilter || undefined, search: search || undefined, page, size: 20 }),
     staleTime: 15_000,
   });
+
+  // Accumulate the fetched data safely
+  useEffect(() => {
+    if (data?.content) {
+      setAccumulatedQuestions(prev => {
+        if (page === 0) return data.content;
+        const existingIds = new Set(prev.map(q => q.id));
+        const uniqueNew = data.content.filter(q => !existingIds.has(q.id));
+        return [...prev, ...uniqueNew];
+      });
+      setHasMore(data.content.length === 20);
+    }
+  }, [data, page]);
+
+  // INFINITE SCROLL LISTENER
+  useEffect(() => {
+      const handleScroll = () => {
+          const isNearBottom = window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 100;
+          if (isNearBottom && !isFetching && hasMore) {
+              setPage(p => p + 1);
+          }
+      };
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+  }, [isFetching, hasMore]);
 
   const deleteMutation = useMutation({
     mutationFn: (id) => questionsApi.remove(id),
@@ -123,8 +157,6 @@ export default function QuestionsManagerTab() {
       deleteMutation.mutate(q.id);
     }
   };
-
-  const questions = data?.content || [];
 
   return (
     <div>
@@ -146,38 +178,48 @@ export default function QuestionsManagerTab() {
         <button className="btn btn-primary" onClick={() => setCreating(true)}>+ New Question</button>
       </div>
 
-      {isLoading && <div className="loading-state">Loading…</div>}
+      {isLoading && page === 0 && <div className="loading-state">Loading…</div>}
       {isError && <div className="error-state">Couldn't load questions.</div>}
-      {!isLoading && !isError && questions.length === 0 && <div className="empty-state">No questions match.</div>}
+      {!isLoading && !isError && accumulatedQuestions.length === 0 && <div className="empty-state">No questions match.</div>}
 
-      {!isLoading && !isError && questions.length > 0 && (
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Type</th>
-              <th>Topic / Category</th>
-              <th>Status</th>
-              <th style={{ width: 140 }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {questions.map((q) => (
-              <tr key={q.id}>
-                <td>{q.title}</td>
-                <td>{q.questionType}</td>
-                <td>{q.topic || q.category || '—'}</td>
-                <td>{q.status}</td>
-                <td>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button className="btn btn-secondary" onClick={() => setEditing(q)}>Edit</button>
-                    <button className="btn btn-reject" onClick={() => handleDelete(q)}>Delete</button>
-                  </div>
-                </td>
+      {/* THE FIX: Removed !isLoading so the table stays firmly mounted while fetching page 2+ */}
+      {accumulatedQuestions.length > 0 && !isError && (
+        <div style={{ paddingBottom: '40px' }}>
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Topic / Category</th>
+                <th>Status</th>
+                <th style={{ width: 140 }}>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {accumulatedQuestions.map((q) => (
+                <tr key={q.id}>
+                  <td>{q.title}</td>
+                  <td>{q.questionType}</td>
+                  <td>{q.topic || q.category || '—'}</td>
+                  <td>{q.status}</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button className="btn btn-secondary" onClick={() => setEditing(q)}>Edit</button>
+                      <button className="btn btn-reject" onClick={() => handleDelete(q)}>Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {isFetching && page > 0 && (
+             <div style={{ textAlign: 'center', padding: '16px', color: '#6366f1' }}>Loading more questions...</div>
+          )}
+          {!hasMore && accumulatedQuestions.length > 0 && (
+             <div style={{ textAlign: 'center', padding: '16px', color: '#94a3b8', fontSize: '14px' }}>End of questions list.</div>
+          )}
+        </div>
       )}
 
       {editing && <QuestionFormModal question={editing} onClose={() => setEditing(null)} />}

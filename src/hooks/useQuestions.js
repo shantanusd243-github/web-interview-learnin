@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import apiClient from '../api/client';
+import { useQuery } from '@tanstack/react-query';
 
 // ==========================================
 // 1. INFINITE SCROLL QUESTIONS HOOK
@@ -120,4 +121,16 @@ export function useTopics() {
     }, []);
 
     return { data };
+}
+
+export function useMetadata() {
+    return useQuery({
+        queryKey: ['question-metadata'],
+        queryFn: async () => {
+            const res = await apiClient.get('/questions/metadata');
+            return res.data;
+        },
+        staleTime: 5 * 60 * 1000, // Cache for 5 minutes so it doesn't spam the DB
+        initialData: { weeks: [], categories: [], tags: [], difficulties: [], priorities: [] }
+    });
 }
