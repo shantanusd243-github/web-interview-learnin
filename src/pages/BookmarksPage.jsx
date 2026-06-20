@@ -1,49 +1,37 @@
 import { useState, useEffect } from 'react';
-import { useQueries, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { bookmarksApi } from '../api/userActivity';
-import { questionsApi } from '../api/questions';
 import QuestionCard from '../components/QuestionCard';
 
 export default function BookmarksPage() {
   const [page, setPage] = useState(0);
   const PAGE_SIZE = 10;
 
-  // 1. Fetch the lightweight list of all bookmark IDs
-  const { data: bookmarks, isLoading: loadingBookmarks, isError: bookmarksError } = useQuery({
-    queryKey: ['bookmarks'],
-    queryFn: bookmarksApi.list,
+  // 1. Fetch ALL fully populated bookmarked questions in ONE lightning-fast API call
+  // Make sure bookmarksApi.getDetails points to your new /api/bookmarks/details endpoint
+  const { data: questions, isLoading, isError } = useQuery({
+    queryKey: ['bookmarkedQuestionsDetails'],
+    queryFn: bookmarksApi.getDetails,
     staleTime: 30_000,
   });
 
-  // 2. CHUNKING LOGIC: Only take the first (page * 10) bookmarks to render
-  const visibleBookmarks = (bookmarks || []).slice(0, (page + 1) * PAGE_SIZE);
-  const hasMore = visibleBookmarks.length < (bookmarks || []).length;
+  // 2. CHUNKING LOGIC: We already have all the data instantly in RAM from the query above.
+  // We just slice it to only render 10 items at a time so the browser doesn't lag.
+  const visibleQuestions = (questions || []).slice(0, (page + 1) * PAGE_SIZE);
+  const hasMore = visibleQuestions.length < (questions || []).length;
 
-  // 3. Fetch details ONLY for the visible chunk
-  const questionQueries = useQueries({
-    queries: visibleBookmarks.map((b) => ({
-      queryKey: ['question', b.questionId],
-      queryFn: () => questionsApi.getById(b.questionId),
-      enabled: !!bookmarks,
-      staleTime: 60_000,
-    })),
-  });
-
-  const loadingQuestions = questionQueries.some((q) => q.isLoading);
-  const questions = questionQueries.map((q) => q.data).filter(Boolean);
-
-  // 4. INFINITE SCROLL LISTENER
+  // 3. INFINITE SCROLL LISTENER (Now 100% Client-Side and Instant)
   useEffect(() => {
       const handleScroll = () => {
           const isNearBottom = window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 100;
-          if (isNearBottom && !loadingQuestions && hasMore) {
+          if (isNearBottom && hasMore) {
               setPage(p => p + 1);
           }
       };
 
       window.addEventListener('scroll', handleScroll);
       return () => window.removeEventListener('scroll', handleScroll);
-  }, [loadingQuestions, hasMore]);
+  }, [hasMore]);
 
   return (
     <div id="page-bookmarks" className="page active">
@@ -54,26 +42,24 @@ export default function BookmarksPage() {
         </div>
       </div>
 
-      {(loadingBookmarks || (loadingQuestions && page === 0)) && <div className="loading-state">Loading bookmarks…</div>}
-      {bookmarksError && <div className="error-state">Couldn't load your bookmarks. Please try again.</div>}
+      {(isLoading && page === 0) && <div className="loading-state">Loading bookmarks…</div>}
+      {isError && <div className="error-state">Couldn't load your bookmarks. Please try again.</div>}
 
-      {!loadingBookmarks && !bookmarksError && (bookmarks || []).length === 0 && (
+      {!isLoading && !isError && (questions || []).length === 0 && (
         <div className="empty-state">
           No bookmarks yet. Tap the 📑 icon on any question to save it here.
         </div>
       )}
 
-      {!loadingBookmarks && !bookmarksError && (bookmarks || []).length > 0 && (
+      {!isLoading && !isError && (questions || []).length > 0 && (
         <div className="mt-6 space-y-4">
-          {questions.map((q) => <QuestionCard q={{ ...q, bookmarked: true }} key={q.id} />)}
 
-          {loadingQuestions && page > 0 && (
-            <div className="flex justify-center py-6">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-            </div>
-          )}
+          {/* We just pass 'q' directly now because your backend already sets bookmarked: true! */}
+          {visibleQuestions.map((q) => <QuestionCard q={q} key={q.id} />)}
 
-          {!hasMore && questions.length > 0 && (
+          {/* We don't need a loading spinner here anymore because scrolling down is instant! */}
+
+          {!hasMore && visibleQuestions.length > 0 && (
             <div className="text-center py-8 text-gray-500 text-sm border-t mt-4">
                 You've reached the end of your bookmarks.
             </div>

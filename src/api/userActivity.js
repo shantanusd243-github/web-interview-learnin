@@ -62,3 +62,11 @@ export const getDashboardSummary = async () => {
     const response = await apiClient.get('/progress/summary');
     return response.data;
 };
+
+// Add this inside your bookmarksApi object
+getDetails: async () => {
+  const response = await fetch('/api/bookmarks/details', {
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  });
+  return response.json();
+}
