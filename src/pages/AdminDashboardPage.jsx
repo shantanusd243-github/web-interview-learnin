@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminQuestionRequestsApi, adminAnalyticsApi } from '../api/questionRequests';
 import QuestionApprovalForm, { buildInitialFromSubmission, toQuestionRequestPayload } from '../components/QuestionApprovalForm';
@@ -164,11 +164,48 @@ function RequestsTab({ status }) {
   const [approvingId, setApprovingId] = useState(null);
   const [rejectingId, setRejectingId] = useState(null);
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['admin-question-requests', status],
-    queryFn: () => adminQuestionRequestsApi.queue({ status, page: 0, size: 50 }),
+  // --- INFINITE SCROLL STATE ---
+  const [page, setPage] = useState(0);
+  const [accumulatedRequests, setAccumulatedRequests] = useState([]);
+  const [hasMore, setHasMore] = useState(true);
+
+  // Reset pagination when switching tabs (e.g., from PENDING to APPROVED)
+  useEffect(() => {
+    setPage(0);
+    setAccumulatedRequests([]);
+    setHasMore(true);
+  }, [status]);
+
+  const { data, isLoading, isError, isFetching } = useQuery({
+    queryKey: ['admin-question-requests', status, page],
+    queryFn: () => adminQuestionRequestsApi.queue({ status, page, size: 20 }),
     staleTime: 15_000,
   });
+
+  // Accumulate the fetched data safely
+  useEffect(() => {
+    if (data?.content) {
+      setAccumulatedRequests(prev => {
+        if (page === 0) return data.content;
+        const existingIds = new Set(prev.map(r => r.id));
+        const uniqueNew = data.content.filter(r => !existingIds.has(r.id));
+        return [...prev, ...uniqueNew];
+      });
+      setHasMore(data.content.length === 20);
+    }
+  }, [data, page]);
+
+  // INFINITE SCROLL LISTENER
+  useEffect(() => {
+      const handleScroll = () => {
+          const isNearBottom = window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 100;
+          if (isNearBottom && !isFetching && hasMore) {
+              setPage(p => p + 1);
+          }
+      };
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+  }, [isFetching, hasMore]);
 
   const rejectMutation = useMutation({
     mutationFn: ({ id, reviewNotes }) => adminQuestionRequestsApi.reject(id, { reviewNotes }),
@@ -179,48 +216,56 @@ function RequestsTab({ status }) {
     },
   });
 
-  const requests = data?.content || [];
-  const approvingRequest = requests.find((r) => r.id === approvingId);
-  const rejectingRequest = requests.find((r) => r.id === rejectingId);
+  const approvingRequest = accumulatedRequests.find((r) => r.id === approvingId);
+  const rejectingRequest = accumulatedRequests.find((r) => r.id === rejectingId);
 
   return (
     <>
-      {isLoading && <div className="loading-state">Loading…</div>}
+      {isLoading && page === 0 && <div className="loading-state">Loading…</div>}
       {isError && <div className="error-state">Couldn't load requests. Please try again.</div>}
-      {!isLoading && !isError && requests.length === 0 && <div className="empty-state">Nothing here.</div>}
+      {!isLoading && !isError && accumulatedRequests.length === 0 && <div className="empty-state">Nothing here.</div>}
 
-      {!isLoading && !isError && requests.length > 0 && (
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Type</th>
-              <th>Topic</th>
-              <th>Submitted</th>
-              {status === 'PENDING' && <th>Actions</th>}
-              {status === 'REJECTED' && <th>Reason</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {requests.map((r) => (
-              <tr key={r.id}>
-                <td>{r.title}</td>
-                <td>{r.questionType}</td>
-                <td>{r.topic || '—'}</td>
-                <td>{new Date(r.createdAt).toLocaleDateString()}</td>
-                {status === 'PENDING' && (
-                  <td>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <button className="btn btn-approve" onClick={() => setApprovingId(r.id)}>Approve</button>
-                      <button className="btn btn-reject" onClick={() => setRejectingId(r.id)}>Reject</button>
-                    </div>
-                  </td>
-                )}
-                {status === 'REJECTED' && <td>{r.reviewNotes}</td>}
+      {!isLoading && !isError && accumulatedRequests.length > 0 && (
+        <div style={{ paddingBottom: '40px' }}>
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Topic</th>
+                <th>Submitted</th>
+                {status === 'PENDING' && <th>Actions</th>}
+                {status === 'REJECTED' && <th>Reason</th>}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {accumulatedRequests.map((r) => (
+                <tr key={r.id}>
+                  <td>{r.title}</td>
+                  <td>{r.questionType}</td>
+                  <td>{r.topic || '—'}</td>
+                  <td>{new Date(r.createdAt).toLocaleDateString()}</td>
+                  {status === 'PENDING' && (
+                    <td>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button className="btn btn-approve" onClick={() => setApprovingId(r.id)}>Approve</button>
+                        <button className="btn btn-reject" onClick={() => setRejectingId(r.id)}>Reject</button>
+                      </div>
+                    </td>
+                  )}
+                  {status === 'REJECTED' && <td>{r.reviewNotes}</td>}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {isFetching && page > 0 && (
+             <div style={{ textAlign: 'center', padding: '16px', color: '#6366f1' }}>Loading more rows...</div>
+          )}
+          {!hasMore && accumulatedRequests.length > 0 && (
+             <div style={{ textAlign: 'center', padding: '16px', color: '#94a3b8', fontSize: '14px' }}>End of requests.</div>
+          )}
+        </div>
       )}
 
       {approvingRequest && <ApproveModal submission={approvingRequest} onClose={() => setApprovingId(null)} />}
