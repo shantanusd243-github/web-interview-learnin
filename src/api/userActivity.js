@@ -4,6 +4,14 @@ export const bookmarksApi = {
   list: () => apiClient.get('/bookmarks').then((r) => r.data),
   add: (questionId) => apiClient.post(`/bookmarks/${questionId}`).then((r) => r.data),
   remove: (questionId) => apiClient.delete(`/bookmarks/${questionId}`).then((r) => r.data),
+  getDetails: async () => {
+      // 1. apiClient handles the base URL and the Bearer token automatically!
+      const response = await apiClient.get('/api/bookmarks/details');
+
+      // 2. Axios automatically wraps the response in a 'data' object.
+      // Return response.data (or response.data.content if using Spring Boot Pagination)
+      return response.data;
+    }
 };
 
 export const progressApi = {
@@ -63,10 +71,3 @@ export const getDashboardSummary = async () => {
     return response.data;
 };
 
-// Add this inside your bookmarksApi object
-getDetails: async () => {
-  const response = await fetch('/api/bookmarks/details', {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-  });
-  return response.json();
-}
