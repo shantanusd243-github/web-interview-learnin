@@ -15,9 +15,20 @@ export default function AppLayout() {
   }, [location.pathname]);
 
   return (
-    <>
-      <Sidebar open={sidebarOpen} />
-      <div className="main">
+<>
+  {sidebarOpen && (
+    <div
+      className="sidebar-overlay"
+      onClick={() => setSidebarOpen(false)}
+    />
+  )}
+
+  <Sidebar
+    open={sidebarOpen}
+    onClose={() => setSidebarOpen(false)}
+  />
+
+  <div className="main">
         <Topbar onToggleSidebar={() => setSidebarOpen((o) => !o)} />
         <div className="content">
           <Outlet />

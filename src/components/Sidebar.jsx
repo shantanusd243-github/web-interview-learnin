@@ -45,7 +45,7 @@ const ADMIN_GROUP = {
   items: [{ to: '/admin', icon: '🛠️', label: 'Admin Dashboard' }],
 };
 
-export default function Sidebar({ open }) {
+export default function Sidebar({ open, onClose }) {
   const { user, logout } = useAuth();
   const isAdmin = user?.roles?.includes('ADMIN');
   const groups = isAdmin ? [...NAV_GROUPS, ADMIN_GROUP] : NAV_GROUPS;
@@ -64,6 +64,7 @@ export default function Sidebar({ open }) {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={onClose}
               className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
             >
               <span className="icon">{item.icon}</span> {item.label}
@@ -89,10 +90,18 @@ export default function Sidebar({ open }) {
           </>
         ) : (
           <>
-            <NavLink to="/login" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+            <NavLink
+              to="/login"
+              onClick={onClose}
+              className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+            >
               <span className="icon">🔑</span> Sign in
             </NavLink>
-            <NavLink to="/register" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+            <NavLink
+              to="/register"
+              onClick={onClose}
+              className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+            >
               <span className="icon">📝</span> Create account
             </NavLink>
           </>
