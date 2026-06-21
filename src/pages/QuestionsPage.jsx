@@ -3,6 +3,7 @@ import { useQuestions } from '../hooks/useQuestions';
 import { useFilters } from '../context/FilterContext';
 import QuestionCard from '../components/QuestionCard';
 import { topicIcon } from '../utils/badges';
+import SkeletonCard from '../components/SkeletonCard';
 
 export default function QuestionsPage() {
   const { debouncedSearch, topic, priority, difficulty } = useFilters();
@@ -79,7 +80,14 @@ export default function QuestionsPage() {
 
       <div id="questionsContainer">
 
-        {loading && questions.length === 0 && <div className="loading-state">Loading questions…</div>}
+        {/* Show 3 skeleton cards while loading to look like a real list */}
+        {loading && (
+          <div className="mt-6 space-y-4">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        )}
 
         {!loading && questions.length === 0 && (
           <div className="empty-state py-12 text-center text-gray-500">

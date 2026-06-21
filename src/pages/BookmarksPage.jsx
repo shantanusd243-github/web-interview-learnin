@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { bookmarksApi } from '../api/userActivity';
 import QuestionCard from '../components/QuestionCard';
+import SkeletonCard from '../components/SkeletonCard';
 
 export default function BookmarksPage() {
   const [page, setPage] = useState(0);
@@ -42,7 +43,14 @@ export default function BookmarksPage() {
         </div>
       </div>
 
-      {(isLoading && page === 0) && <div className="loading-state">Loading bookmarks…</div>}
+      {/* Sleek animated skeleton loader */}
+            {(isLoading && page === 0) && (
+              <div className="mt-6 space-y-4">
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </div>
+            )}
       {isError && <div className="error-state">Couldn't load your bookmarks. Please try again.</div>}
 
       {!isLoading && !isError && (questions || []).length === 0 && (

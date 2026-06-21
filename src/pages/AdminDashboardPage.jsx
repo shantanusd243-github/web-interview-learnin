@@ -6,6 +6,7 @@ import TaxonomyManagerTab from '../components/TaxonomyManagerTab';
 import ReferenceContentManagerTab from '../components/ReferenceContentManagerTab';
 import QuestionsManagerTab from '../components/QuestionsManagerTab';
 import CheatSheetManagerTab from '../components/CheatSheetManagerTab';
+import SkeletonCard from '../components/SkeletonCard';
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
@@ -221,7 +222,14 @@ function RequestsTab({ status }) {
 
   return (
     <>
-      {isLoading && page === 0 && <div className="loading-state">Loading…</div>}
+      {/* Show 3 skeleton cards while loading to look like a real list */}
+      {isLoading && (
+        <div className="mt-6 space-y-4">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      )}
       {isError && <div className="error-state">Couldn't load requests. Please try again.</div>}
       {!isLoading && !isError && accumulatedRequests.length === 0 && <div className="empty-state">Nothing here.</div>}
 
