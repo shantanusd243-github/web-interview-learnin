@@ -92,8 +92,8 @@ export default function DsaPage() {
           <button key={w} className={`filter-chip${week === w ? ' active' : ''}`} onClick={() => setWeek(w)}>{w}</button>
         ))}
         {DIFFS.map((d) => (
-          <button key={d.label} className={`filter-chip${diff === d.label ? ' active' : ''}`} className={`filter-chip ${diff === d.label ? 'active' : ''}`}onClick={() => setDiff((cur) => (cur === d.label ? 'all' : d.label))}>
-            {d.label}
+         <button key={d.label} className={`filter-chip${diff === d.label ? ' active' : ''}`} style={d.style} onClick={() => setDiff((cur) => (cur === d.label ? 'all' : d.label))}>
+                     {d.label}
           </button>
         ))}
 
