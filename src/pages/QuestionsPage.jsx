@@ -118,9 +118,11 @@ export default function QuestionsPage() {
         ))}
 
         {loading && questions.length > 0 && (
-          <div className="flex justify-center py-6">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-          </div>
+            <div className="mt-6 space-y-4">
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </div>
         )}
 
         {!loading && !hasMore && questions.length > 0 && (

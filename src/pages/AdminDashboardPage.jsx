@@ -7,6 +7,7 @@ import ReferenceContentManagerTab from '../components/ReferenceContentManagerTab
 import QuestionsManagerTab from '../components/QuestionsManagerTab';
 import CheatSheetManagerTab from '../components/CheatSheetManagerTab';
 import SkeletonCard from '../components/SkeletonCard';
+import SkeletonAdminDashboard from '../components/SkeletonAdminDashboard'; // <-- IMPORT ADDED HERE
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
@@ -26,7 +27,9 @@ function OverviewTab() {
     staleTime: 30_000,
   });
 
-  if (isLoading) return <div className="loading-state">Loading dashboard…</div>;
+  // --- REPLACED TEXT LOADER WITH SLEEK ADMIN SKELETON ---
+  if (isLoading) return <SkeletonAdminDashboard />;
+
   if (isError) return <div className="error-state">Couldn't load analytics. Please try again.</div>;
 
   return (
@@ -50,7 +53,7 @@ function OverviewTab() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 16 }}>
         <div className="card">
           <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>Questions by Type</div>
           {Object.entries(data.questionsByType || {}).map(([k, v]) => (
@@ -170,7 +173,7 @@ function RequestsTab({ status }) {
   const [accumulatedRequests, setAccumulatedRequests] = useState([]);
   const [hasMore, setHasMore] = useState(true);
 
-  // Reset pagination when switching tabs (e.g., from PENDING to APPROVED)
+  // Reset pagination when switching tabs
   useEffect(() => {
     setPage(0);
     setAccumulatedRequests([]);
@@ -222,7 +225,6 @@ function RequestsTab({ status }) {
 
   return (
     <>
-      {/* Show 3 skeleton cards while loading to look like a real list */}
       {isLoading && (
         <div className="mt-6 space-y-4">
           <SkeletonCard />
@@ -268,7 +270,11 @@ function RequestsTab({ status }) {
           </table>
 
           {isFetching && page > 0 && (
-             <div style={{ textAlign: 'center', padding: '16px', color: '#6366f1' }}>Loading more rows...</div>
+            <div className="mt-6 space-y-4">
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </div>
           )}
           {!hasMore && accumulatedRequests.length > 0 && (
              <div style={{ textAlign: 'center', padding: '16px', color: '#94a3b8', fontSize: '14px' }}>End of requests.</div>

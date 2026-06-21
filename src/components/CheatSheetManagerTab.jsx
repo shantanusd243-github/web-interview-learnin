@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { cheatSheetApi } from '../api/reference';
-
+import SkeletonCard from '../components/SkeletonCard';
 const emptyItem = (category) => ({
   category: category || '',
   categoryLabel: '',
@@ -68,7 +68,13 @@ export default function CheatSheetManagerTab() {
 
   const isNew = selectedId === '__new__';
 
-  if (isLoading) return <div className="loading-state">Loading cheat sheet items…</div>;
+  if (isLoading) return (
+                                        <div className="mt-6 space-y-4">
+                                          <SkeletonCard />
+                                          <SkeletonCard />
+                                          <SkeletonCard />
+                                        </div>
+                                      );
   if (isError) return <div className="error-state">Couldn't load cheat sheet items.</div>;
 
   const categories = Object.entries(grouped || {});

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { questionsApi } from '../api/questions';
 import QuestionApprovalForm, { emptyQuestionForm, toQuestionRequestPayload } from './QuestionApprovalForm';
-
+import SkeletonCard from '../components/SkeletonCard';
 function csvJoin(arr) {
   return (arr || []).join(', ');
 }
@@ -178,7 +178,13 @@ export default function QuestionsManagerTab() {
         <button className="btn btn-primary" onClick={() => setCreating(true)}>+ New Question</button>
       </div>
 
-      {isLoading && page === 0 && <div className="loading-state">Loading…</div>}
+      {isLoading && (
+                <div className="mt-6 space-y-4">
+                  <SkeletonCard />
+                  <SkeletonCard />
+                  <SkeletonCard />
+                </div>
+              )}
       {isError && <div className="error-state">Couldn't load questions.</div>}
       {!isLoading && !isError && accumulatedQuestions.length === 0 && <div className="empty-state">No questions match.</div>}
 
@@ -214,8 +220,12 @@ export default function QuestionsManagerTab() {
           </table>
 
           {isFetching && page > 0 && (
-             <div style={{ textAlign: 'center', padding: '16px', color: '#6366f1' }}>Loading more questions...</div>
-          )}
+                                                  <div className="mt-6 space-y-4">
+                                                    <SkeletonCard />
+                                                    <SkeletonCard />
+                                                    <SkeletonCard />
+                                                  </div>
+                                                )}
           {!hasMore && accumulatedQuestions.length > 0 && (
              <div style={{ textAlign: 'center', padding: '16px', color: '#94a3b8', fontSize: '14px' }}>End of questions list.</div>
           )}

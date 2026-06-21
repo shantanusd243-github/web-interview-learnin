@@ -3,6 +3,7 @@ import { useQuestions } from '../hooks/useQuestions';
 import { useFilters } from '../context/FilterContext';
 import QuestionCard from '../components/QuestionCard';
 import apiClient from '../api/client';
+import SkeletonCard from '../components/SkeletonCard';
 
 const CATEGORIES = ['Infrastructure', 'Storage', 'Real-time', 'Social', 'Commerce', 'AI'];
 
@@ -93,7 +94,13 @@ export default function SystemDesignPage() {
       </div>
 
       <div id="sdContainer">
-        {loading && questions.length === 0 && <div className="loading-state">Loading problems…</div>}
+        {loading && (
+          <div className="mt-6 space-y-4">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        )}
         {!loading && questions.length === 0 && <div className="empty-state">No problems match your filters or search.</div>}
 
         {Object.entries(byCategory).map(([catName, qs]) => (
@@ -105,7 +112,13 @@ export default function SystemDesignPage() {
             </div>
         ))}
 
-        {loading && questions.length > 0 && <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}><div className="loading-state">Loading more...</div></div>}
+        {loading && questions.length > 0 && (
+                                                   <div className="mt-6 space-y-4">
+                                                     <SkeletonCard />
+                                                     <SkeletonCard />
+                                                     <SkeletonCard />
+                                                   </div>
+                                                 )}
         {!loading && !hasMore && questions.length > 0 && <div style={{ textAlign: 'center', padding: '24px 0', color: '#6b7280', fontSize: '14px', borderTop: '1px solid #e5e7eb', marginTop: '16px' }}>You've reached the end of the list.</div>}
       </div>
     </div>

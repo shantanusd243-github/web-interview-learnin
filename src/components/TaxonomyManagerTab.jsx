@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { topicsApi, tagsApi, companiesApi } from '../api/questions';
-
+import SkeletonCard from '../components/SkeletonCard';
 const KINDS = {
   topics: { label: 'Topics', api: topicsApi, hasUpdate: true, hasIconDesc: true },
   tags: { label: 'Tags', api: tagsApi, hasUpdate: false, hasIconDesc: false },
@@ -94,7 +94,13 @@ function TaxonomyList({ kindKey }) {
         <div className="auth-error">{createMutation.error?.response?.data?.message || 'Could not create.'}</div>
       )}
 
-      {isLoading && <div className="loading-state">Loading…</div>}
+      {isLoading && (
+                                    <div className="mt-6 space-y-4">
+                                      <SkeletonCard />
+                                      <SkeletonCard />
+                                      <SkeletonCard />
+                                    </div>
+                                  )}
       {isError && <div className="error-state">Couldn't load {kind.label.toLowerCase()}.</div>}
       {!isLoading && !isError && (data || []).length === 0 && <div className="empty-state">None yet.</div>}
 

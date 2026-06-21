@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { referenceApi } from '../api/reference';
+import SkeletonCard from '../components/SkeletonCard';
 
 export default function ReferenceContentManagerTab() {
   const queryClient = useQueryClient();
@@ -64,7 +65,13 @@ export default function ReferenceContentManagerTab() {
     });
   };
 
-  if (isLoading) return <div className="loading-state">Loading reference pages…</div>;
+  if (isLoading) return (
+                                        <div className="mt-6 space-y-4">
+                                          <SkeletonCard />
+                                          <SkeletonCard />
+                                          <SkeletonCard />
+                                        </div>
+                                      );
   if (isError) return <div className="error-state">Couldn't load reference pages.</div>;
 
   return (

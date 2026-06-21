@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { cheatSheetApi } from '../api/reference';
-
+import SkeletonTextPage from '../components/SkeletonTextPage';
 const CATEGORY_ORDER = ['coreJava', 'java8', 'spring', 'micro'];
 
 export default function CheatSheetPage() {
@@ -25,7 +25,11 @@ export default function CheatSheetPage() {
         </div>
       </div>
 
-      {isLoading && <div className="loading-state">Loading cheat sheet…</div>}
+      {isLoading && (
+        <div className="mt-6">
+          <SkeletonTextPage />
+        </div>
+      )}
       {isError && <div className="error-state">Couldn't load the cheat sheet. Please try again.</div>}
 
       {categories.map(([key, items]) => (

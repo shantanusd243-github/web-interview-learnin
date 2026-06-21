@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { referenceApi } from '../api/reference';
+import SkeletonTextPage from '../components/SkeletonTextPage';
 
 export default function ReferencePage() {
   const { pageKey } = useParams();
@@ -13,7 +14,11 @@ export default function ReferencePage() {
 
   return (
     <div id={`page-${pageKey}`} className="page active">
-      {isLoading && <div className="loading-state">Loading…</div>}
+      {isLoading && (
+        <div className="mt-6">
+          <SkeletonTextPage />
+        </div>
+      )}
       {isError && <div className="error-state">Couldn't load this page. Please try again.</div>}
 
       {data && (
