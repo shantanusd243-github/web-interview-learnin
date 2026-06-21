@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom'; // <-- ADDED: For redirecting
 import { mockInterviewApi } from '../api/userActivity';
 import { priorityBadgeClass, difficultyBadgeClass } from '../utils/badges';
 
@@ -10,19 +11,17 @@ export default function MockInterviewPage() {
   const [confident, setConfident] = useState(0);
   const [weak, setWeak] = useState(0);
 
-  // Replaces the buggy React Query fetch state with a reliable local loading state
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate(); // <-- ADDED: Instantiate navigate
 
   const markMutation = useMutation({ mutationFn: mockInterviewApi.mark });
   const currentQ = pos >= 0 ? history[pos] : null;
 
-  // 1. Fixed Fetch Logic: Hits API directly, bypassing React Query cache bugs
   const fetchNext = async () => {
     setIsLoading(true);
     try {
       const result = await mockInterviewApi.next();
       if (result) {
-        // Appends new question and truncates 'future' if user fetched from the middle of history
         setHistory((h) => [...h.slice(0, pos + 1), result]);
         setPos((p) => p + 1);
         setRevealed(false);
@@ -31,12 +30,20 @@ export default function MockInterviewPage() {
       }
     } catch (error) {
       console.error("Failed to fetch next mock question:", error);
+
+      // <-- ADDED: Robust Error Handling & Auth Redirection
+      const status = error.response?.status;
+      if (status === 401 || status === 403) {
+        alert("Your session has expired or you need to log in. Redirecting to login...");
+        navigate('/login');
+      } else {
+        alert("Failed to load the question. Please check your connection and try again.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 2. Fixed Navigation Logic: Progresses through history safely before fetching new data
   const handleNext = () => {
     if (pos < history.length - 1) {
       setPos((p) => p + 1);
@@ -46,7 +53,6 @@ export default function MockInterviewPage() {
     }
   };
 
-  // 3. Fixed Marking Logic: Marks the question, then moves forward safely using handleNext
   const handleMark = async (status) => {
     if (!currentQ) return;
     try {
@@ -54,9 +60,18 @@ export default function MockInterviewPage() {
       if (status === 'confident') setConfident((c) => c + 1);
       else if (status === 'weak') setWeak((w) => w + 1);
 
-      handleNext(); // safely progress
+      handleNext();
     } catch (error) {
       console.error("Failed to mark question:", error);
+
+      // <-- ADDED: Auth Redirection for marking as well
+      const httpStatus = error.response?.status;
+      if (httpStatus === 401 || httpStatus === 403) {
+        alert("Your session has expired. Please log in again.");
+        navigate('/login');
+      } else {
+        alert("Failed to save your progress. Please try again.");
+      }
     }
   };
 

@@ -667,13 +667,20 @@ body {
 
 /* ── Topbar filter row behaviour ───────────────────────────────────────── */
 /* Mobile: filters occupy their own full-width row */
+/* Mobile layout */
 .topbar-filters {
-  order: 3;   /* always after hamburger + search */
+  order: 3;
   width: 100%;
+  display: flex;
+  gap: 8px;
 }
-.topbar-filters select { min-width: 0; }
 
-/* Tablet+: filters sit beside the search bar on the same row */
+.topbar-filters select {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Tablet & Desktop layout */
 @media (min-width: 640px) {
   .topbar {
     flex-wrap: nowrap;
@@ -685,9 +692,11 @@ body {
     flex: none;
     flex-wrap: nowrap;
   }
-  .topbar-filters select { flex: none; min-width: 110px; }
+  .topbar-filters select {
+    flex: none;
+    min-width: 110px;
+  }
 }
-
 /* ── DSA / SysDesign filter chip rows — horizontal scroll on mobile ───── */
 .chip-scroll-row {
   display: flex;

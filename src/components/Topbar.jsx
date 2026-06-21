@@ -37,7 +37,6 @@ export default function Topbar({ onToggleSidebar }) {
 
   return (
     <div className="topbar">
-      {/* Row 1: hamburger + search */}
       <button className="hamburger" onClick={onToggleSidebar} aria-label="Toggle menu">
         ☰
       </button>
@@ -60,17 +59,9 @@ export default function Topbar({ onToggleSidebar }) {
         )}
       </div>
 
-      {/* Row 2 (wraps below on mobile): filter selects */}
-      <div style={{
-        display: 'flex',
-        gap: 8,
-        flexWrap: 'wrap',
-        width: '100%',
-        /* On ≥640px, don't force full width — let them sit beside search */
-      }}
-        className="topbar-filters"
-      >
-        <select value={currentValue} onChange={handleTopicChange} style={{ flex: '1 1 140px' }}>
+      {/* --- ALL FIGHTING INLINE STYLES REMOVED FROM HERE --- */}
+      <div className="topbar-filters">
+        <select value={currentValue} onChange={handleTopicChange}>
           <option value="All Topics">All Topics</option>
           <optgroup label="Dedicated Modules">
             <option value="DSA">💻 DSA</option>
@@ -85,12 +76,12 @@ export default function Topbar({ onToggleSidebar }) {
           </optgroup>
         </select>
 
-        <select value={priority} onChange={(e) => setPriority(e.target.value)} style={{ flex: '1 1 110px' }}>
+        <select value={priority} onChange={(e) => setPriority(e.target.value)}>
           <option value="">All Priority</option>
           {PRIORITIES.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
 
-        <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} style={{ flex: '1 1 110px' }}>
+        <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
           <option value="">All Levels</option>
           {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
         </select>
