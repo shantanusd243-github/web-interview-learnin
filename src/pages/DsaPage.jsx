@@ -85,8 +85,8 @@ export default function DsaPage() {
         </div>
       </div>
 
-      <div style={{ marginBottom: 16 }}>
-      <div className="chip-scroll-row" style={{ alignItems: 'center' }}>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+      <div className="chip-scroll-row" style={{ flex: 1 }}>
         <button className={`filter-chip${week === 'all' ? ' active' : ''}`} onClick={() => setWeek('all')}>All</button>
         {WEEKS.map((w) => (
           <button key={w} className={`filter-chip${week === w ? ' active' : ''}`} onClick={() => setWeek(w)}>{w}</button>

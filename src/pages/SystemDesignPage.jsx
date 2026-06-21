@@ -75,8 +75,8 @@ export default function SystemDesignPage() {
         </div>
       </div>
 
-      <div style={{ marginBottom: 16 }}>
-      <div className="chip-scroll-row" style={{ alignItems: 'center' }}>
+       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+           <div className="chip-scroll-row" style={{ flex: 1 }}>
         <button className={`filter-chip${cat === 'all' ? ' active' : ''}`} onClick={() => setCat('all')}>All</button>
         {CATEGORIES.map((c) => (
           <button key={c} className={`filter-chip${cat === c ? ' active' : ''}`} onClick={() => setCat(c)}>

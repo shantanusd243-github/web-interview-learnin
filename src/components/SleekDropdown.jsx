@@ -40,7 +40,10 @@ export default function SleekDropdown({ options, value, onChange, placeholder = 
           position: 'absolute', top: '110%', left: 0, width: '100%',
           background: 'var(--card)', border: '1px solid var(--border-color)',
           borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-          zIndex: 1000, overflow: 'hidden', padding: '4px'
+          zIndex: 1000, overflow: 'hidden', padding: '4px',
+          maxHeight: '300px',
+          overflowY: 'auto',
+          scrollbarWidth: 'thin'
         }}>
           {options.map((opt) => (
             <div
