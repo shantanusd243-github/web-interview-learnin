@@ -38,6 +38,17 @@ export function AuthProvider({ children }) {
     return data.user;
   }, []);
 
+  // 1. Moved inside the component and wrapped in useCallback for consistency
+  const googleLogin = useCallback(async (idToken) => {
+    const data = await authApi.googleLogin(idToken);
+
+    // 2. Used your existing setTokens utility instead of undefined setToken/setRefreshToken
+    setTokens(data);
+    setUser(data.user);
+
+    return data.user;
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await authApi.logout();
@@ -50,8 +61,9 @@ export function AuthProvider({ children }) {
 
   const isAdmin = !!user?.roles?.includes('ADMIN');
 
+  // 3. Combined into a single, clean return statement
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, isAdmin }}>
+    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

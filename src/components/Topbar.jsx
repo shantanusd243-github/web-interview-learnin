@@ -1,7 +1,8 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTopics } from '../hooks/useQuestions';
 import { useFilters } from '../context/FilterContext';
-
+import ThemeToggle from './ThemeToggle'; // <-- 1. ADD THIS IMPORT
+import SleekDropdown from './SleekDropdown';
 const PRIORITIES  = ['Must Know', 'Important', 'Nice to Know'];
 const DIFFICULTIES = ['Beginner', 'Intermediate', 'Advanced', 'Senior'];
 
@@ -35,7 +36,7 @@ export default function Topbar({ onToggleSidebar }) {
     else { setTopic(val === 'All Topics' ? '' : val); navigate('/questions'); }
   };
 
-  return (
+return (
     <div className="topbar">
       <button className="hamburger" onClick={onToggleSidebar} aria-label="Toggle menu">
         ☰
@@ -59,32 +60,37 @@ export default function Topbar({ onToggleSidebar }) {
         )}
       </div>
 
-      {/* --- ALL FIGHTING INLINE STYLES REMOVED FROM HERE --- */}
-      <div className="topbar-filters">
-        <select value={currentValue} onChange={handleTopicChange}>
-          <option value="All Topics">All Topics</option>
-          <optgroup label="Dedicated Modules">
-            <option value="DSA">💻 DSA</option>
-            <option value="System Design">🏗️ System Design</option>
-          </optgroup>
-          <optgroup label="Theory Topics">
-            {theoryTopics.map((t) => {
-              const label = typeof t === 'object' ? (t.name || t.topic) : t;
-              const val   = typeof t === 'object' ? (t.name || t.topic) : t;
-              return <option key={val} value={val}>{label}</option>;
-            })}
-          </optgroup>
-        </select>
+      <div className="topbar-filters" style={{ display: 'flex', gap: '10px' }}>
 
-        <select value={priority} onChange={(e) => setPriority(e.target.value)}>
-          <option value="">All Priority</option>
-          {PRIORITIES.map((p) => <option key={p} value={p}>{p}</option>)}
-        </select>
+        {/* Topic Dropdown */}
+        <SleekDropdown
+          value={currentValue}
+          options={['All Topics', 'DSA', 'System Design', ...theoryTopics.map(t => typeof t === 'object' ? (t.name || t.topic) : t)]}
+          onChange={(val) => {
+            if (val === 'DSA') { setTopic(''); navigate('/dsa'); }
+            else if (val === 'System Design') { setTopic(''); navigate('/sysdesign'); }
+            else { setTopic(val === 'All Topics' ? '' : val); navigate('/questions'); }
+          }}
+          placeholder="All Topics"
+        />
 
-        <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
-          <option value="">All Levels</option>
-          {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
-        </select>
+        {/* Priority Dropdown */}
+        <SleekDropdown
+          value={priority || "All Priority"}
+          options={['All Priority', ...PRIORITIES]}
+          onChange={(val) => setPriority(val === 'All Priority' ? '' : val)}
+        />
+
+        {/* Difficulty Dropdown */}
+        <SleekDropdown
+          value={difficulty || "All Levels"}
+          options={['All Levels', ...DIFFICULTIES]}
+          onChange={(val) => setDifficulty(val === 'All Levels' ? '' : val)}
+        />
+      </div>
+
+      <div style={{ marginLeft: '16px', display: 'flex', alignItems: 'center' }}>
+        <ThemeToggle />
       </div>
     </div>
   );

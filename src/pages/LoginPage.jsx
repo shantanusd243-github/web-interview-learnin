@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  // We extract the new googleLogin function from our AuthContext
+  const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState('');
@@ -22,6 +24,20 @@ export default function LoginPage() {
       navigate(from, { replace: true });
     } catch (err) {
       setError(err?.response?.data?.message || 'Could not sign in. Check your email and password.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    setSubmitting(true);
+    try {
+      // Send the Google ID token to the backend
+      await googleLogin(credentialResponse.credential);
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Google sign in failed. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -47,8 +63,15 @@ export default function LoginPage() {
               autoComplete="email"
             />
           </div>
+
           <div className="auth-field">
-            <label htmlFor="password">Password</label>
+            {/* Added Flexbox to put label and Forgot link on the same line */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <label htmlFor="password" style={{ marginBottom: 0 }}>Password</label>
+              <Link to="/forgot-password" style={{ fontSize: '12px', color: '#10b981', textDecoration: 'none' }}>
+                Forgot password?
+              </Link>
+            </div>
             <input
               id="password"
               type="password"
@@ -58,12 +81,42 @@ export default function LoginPage() {
               autoComplete="current-password"
             />
           </div>
+
           <button className="auth-submit" type="submit" disabled={submitting}>
             {submitting ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
 
-        <div className="auth-switch">
+        {/* Visual "OR" Divider */}
+        <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              margin: '24px 0',
+              color: '#94a3b8',
+              fontSize: '12px',
+              letterSpacing: '1px'
+            }}>
+              <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #334155', margin: '0 10px 0 0' }} />
+              <span>OR</span>
+              <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #334155', margin: '0 0 0 10px' }} />
+        </div>
+
+        {/* Google Login Button */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setError('Google popup closed or failed. Please try again.')}
+            useOneTap
+
+            // FIXED: Changed to filled_blue or outline so it pops on dark mode
+            theme="filled_blue"
+            shape="rectangular"
+            size="large"
+            text="signin_with"
+          />
+        </div>
+
+        <div className="auth-switch" style={{ marginTop: '24px' }}>
           New here? <Link to="/register">Create an account</Link>
         </div>
       </div>

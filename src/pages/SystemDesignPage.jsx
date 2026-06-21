@@ -4,6 +4,7 @@ import { useFilters } from '../context/FilterContext';
 import QuestionCard from '../components/QuestionCard';
 import apiClient from '../api/client';
 import SkeletonCard from '../components/SkeletonCard';
+import SleekDropdown from '../components/SleekDropdown';
 
 const CATEGORIES = ['Infrastructure', 'Storage', 'Real-time', 'Social', 'Commerce', 'AI'];
 
@@ -85,16 +86,14 @@ export default function SystemDesignPage() {
 
         {/* 4. THE NEW TAG DROPDOWN */}
       </div>
-        <div style={{ marginTop: 8 }}>
-        <select
-            value={tag}
-            onChange={(e) => setTag(e.target.value)}
-            style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, background: 'white', width: '100%', maxWidth: 220 }}
-        >
-           <option value="all">🏷️ All Tags</option>
-           {availableTags.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
-        </div>
+        <div style={{ marginTop: 12, maxWidth: '220px' }}>
+                <SleekDropdown
+                  value={tag === 'all' ? '🏷️ All Tags' : tag}
+                  options={['🏷️ All Tags', ...availableTags]}
+                  onChange={(val) => setTag(val === '🏷️ All Tags' ? 'all' : val)}
+                  placeholder="🏷️ All Tags"
+                />
+              </div>
       </div>
 
       <div id="sdContainer">

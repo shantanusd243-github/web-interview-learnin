@@ -4,7 +4,7 @@ import { useFilters } from '../context/FilterContext';
 import QuestionCard from '../components/QuestionCard';
 import apiClient from '../api/client';
 import SkeletonCard from '../components/SkeletonCard';
-
+import SleekDropdown from '../components/SleekDropdown';
 const WEEKS = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8'];
 const DIFFS = [
   { label: 'Easy', style: { background: '#dcfce7', color: '#16a34a', borderColor: '#bbf7d0' } },
@@ -92,23 +92,21 @@ export default function DsaPage() {
           <button key={w} className={`filter-chip${week === w ? ' active' : ''}`} onClick={() => setWeek(w)}>{w}</button>
         ))}
         {DIFFS.map((d) => (
-          <button key={d.label} className={`filter-chip${diff === d.label ? ' active' : ''}`} style={d.style} onClick={() => setDiff((cur) => (cur === d.label ? 'all' : d.label))}>
+          <button key={d.label} className={`filter-chip${diff === d.label ? ' active' : ''}`} className={`filter-chip ${diff === d.label ? 'active' : ''}`}onClick={() => setDiff((cur) => (cur === d.label ? 'all' : d.label))}>
             {d.label}
           </button>
         ))}
 
       </div>
         {/* Tag dropdown on its own row */}
-        <div style={{ marginTop: 8 }}>
-        <select
-            value={tag}
-            onChange={(e) => setTag(e.target.value)}
-            style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, background: 'white', width: '100%', maxWidth: 220 }}
-        >
-           <option value="all">🏷️ All Tags</option>
-           {availableTags.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
-        </div>
+        <div style={{ marginTop: 12,maxWidth: '220px' }}>
+                <SleekDropdown
+                  value={tag === 'all' ? '🏷️ All Tags' : tag}
+                  options={['🏷️ All Tags', ...availableTags]}
+                  onChange={(val) => setTag(val === '🏷️ All Tags' ? 'all' : val)}
+                  placeholder="🏷️ All Tags"
+                />
+              </div>
       </div>
 
       <div id="dsaContainer">

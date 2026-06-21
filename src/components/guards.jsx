@@ -15,3 +15,25 @@ export function AdminRoute() {
   if (!isAdmin) return <Navigate to="/" replace />;
   return <Outlet />;
 }
+
+// 1. ADD THIS NEW GUARD AT THE BOTTOM:
+export function PublicRoute({ children }) {
+  const { user, loading } = useAuth();
+
+  // Wait for auth check to finish before deciding
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20vh' }}>
+        Loading...
+      </div>
+    );
+  }
+
+  // If they are already logged in, redirect them to the dashboard
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // If they are NOT logged in, let them see the public page
+  return children ? children : <Outlet />;
+}
