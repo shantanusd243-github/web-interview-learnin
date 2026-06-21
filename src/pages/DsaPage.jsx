@@ -85,7 +85,8 @@ export default function DsaPage() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16, alignItems: 'center' }}>
+      <div style={{ marginBottom: 16 }}>
+      <div className="chip-scroll-row" style={{ alignItems: 'center' }}>
         <button className={`filter-chip${week === 'all' ? ' active' : ''}`} onClick={() => setWeek('all')}>All</button>
         {WEEKS.map((w) => (
           <button key={w} className={`filter-chip${week === w ? ' active' : ''}`} onClick={() => setWeek(w)}>{w}</button>
@@ -96,15 +97,18 @@ export default function DsaPage() {
           </button>
         ))}
 
-        {/* 4. THE NEW TAG DROPDOWN */}
+      </div>
+        {/* Tag dropdown on its own row */}
+        <div style={{ marginTop: 8 }}>
         <select
             value={tag}
             onChange={(e) => setTag(e.target.value)}
-            style={{ marginLeft: 'auto', padding: '6px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, background: 'white' }}
+            style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, background: 'white', width: '100%', maxWidth: 220 }}
         >
            <option value="all">🏷️ All Tags</option>
            {availableTags.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
+        </div>
       </div>
 
       <div id="dsaContainer">

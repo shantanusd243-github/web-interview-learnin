@@ -74,7 +74,8 @@ export default function SystemDesignPage() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16, alignItems: 'center' }}>
+      <div style={{ marginBottom: 16 }}>
+      <div className="chip-scroll-row" style={{ alignItems: 'center' }}>
         <button className={`filter-chip${cat === 'all' ? ' active' : ''}`} onClick={() => setCat('all')}>All</button>
         {CATEGORIES.map((c) => (
           <button key={c} className={`filter-chip${cat === c ? ' active' : ''}`} onClick={() => setCat(c)}>
@@ -83,14 +84,17 @@ export default function SystemDesignPage() {
         ))}
 
         {/* 4. THE NEW TAG DROPDOWN */}
+      </div>
+        <div style={{ marginTop: 8 }}>
         <select
             value={tag}
             onChange={(e) => setTag(e.target.value)}
-            style={{ marginLeft: 'auto', padding: '6px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, background: 'white' }}
+            style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, background: 'white', width: '100%', maxWidth: 220 }}
         >
            <option value="all">🏷️ All Tags</option>
            {availableTags.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
+        </div>
       </div>
 
       <div id="sdContainer">

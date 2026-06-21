@@ -105,7 +105,7 @@ function TaxonomyList({ kindKey }) {
       {!isLoading && !isError && (data || []).length === 0 && <div className="empty-state">None yet.</div>}
 
       {!isLoading && !isError && (data || []).length > 0 && (
-        <table className="admin-table">
+        <div className="admin-table-wrap"><table className="admin-table">
           <thead>
             <tr>
               <th>Name</th>
@@ -139,7 +139,7 @@ function TaxonomyList({ kindKey }) {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       )}
     </div>
   );

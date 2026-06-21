@@ -248,7 +248,7 @@ const handleBookmarkClick = (e) => {
       <div className={`q-header${open ? ' open' : ''}`} onClick={() => setOpen((o) => !o)}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
           <div className="q-question">{title}</div>
-          <div className={q.questionType === 'THEORY' ? undefined : 'concept-tags'} style={q.questionType === 'THEORY' ? { display: 'flex', gap: 6, flexWrap: 'wrap' } : undefined}>
+          <div className={q.questionType === 'THEORY' ? 'q-badges-row' : 'concept-tags'}>
             {q.questionType === 'THEORY' && q.topic && <span className="badge badge-topic">{q.topic}</span>}
             {q.questionType !== 'THEORY' && (q.tags || []).map((t) => (
               <span className="concept-tag" key={t}>
@@ -257,7 +257,7 @@ const handleBookmarkClick = (e) => {
             ))}
             {q.priority && <span className={`badge ${priorityBadgeClass(q.priority)}`}>{q.priority}</span>}
             {q.difficulty && <span className={`badge ${difficultyBadgeClass(q.difficulty)}`}>{q.difficulty}</span>}
-            {q.time && <span style={{ fontSize: 11, color: '#64748b', marginLeft: 'auto' }}>⏱️ {q.time}</span>}
+            {q.time && <span style={{ fontSize: 11, color: '#64748b' }}>⏱️ {q.time}</span>}
           </div>
           {q.shortSummary && <div style={{ fontSize: 12, color: '#475569', marginTop: 4 }}>{q.shortSummary}</div>}
         </div>

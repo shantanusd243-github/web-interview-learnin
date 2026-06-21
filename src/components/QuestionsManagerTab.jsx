@@ -191,7 +191,7 @@ export default function QuestionsManagerTab() {
       {/* THE FIX: Removed !isLoading so the table stays firmly mounted while fetching page 2+ */}
       {accumulatedQuestions.length > 0 && !isError && (
         <div style={{ paddingBottom: '40px' }}>
-          <table className="admin-table">
+          <div className="admin-table-wrap"><table className="admin-table">
             <thead>
               <tr>
                 <th>Title</th>
@@ -217,7 +217,7 @@ export default function QuestionsManagerTab() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
 
           {isFetching && page > 0 && (
                                                   <div className="mt-6 space-y-4">
