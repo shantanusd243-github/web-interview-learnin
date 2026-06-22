@@ -14,7 +14,7 @@ export default function SleekDropdown({ options, value, onChange, placeholder = 
   }, []);
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', minWidth: '140px' }}>
+    <div ref={containerRef} style={{ position: 'relative', minWidth: '130px' }}>
       <div
         onClick={() => setIsOpen(!isOpen)}
         style={{
