@@ -107,9 +107,7 @@ export default function LoginPage() {
             onSuccess={handleGoogleSuccess}
             onError={() => setError('Google popup closed or failed. Please try again.')}
             useOneTap
-
-            // FIXED: Changed to filled_blue or outline so it pops on dark mode
-            theme="filled_blue"
+            theme="filled_black"
             shape="rectangular"
             size="large"
             text="signin_with"

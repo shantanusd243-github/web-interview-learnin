@@ -944,3 +944,19 @@ body {
   }
   /* Ensure the active state is visible */
   .filter-chip.active { background: var(--accent) !important; color: white !important; }
+
+/* --- Mobile Fix for Dropdowns & Filters --- */
+.filters-wrapper {
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap; /* Naturally wraps to the next line if it runs out of space */
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+@media (max-width: 639px) {
+  .filters-wrapper {
+    justify-content: flex-start; /* Keeps the dropdown neatly on the left side */
+  }
+}
