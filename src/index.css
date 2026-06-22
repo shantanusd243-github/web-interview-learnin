@@ -717,6 +717,43 @@ body {
   .topbar-filters select { flex: none; min-width: 110px; }
 }
 
+/* Target the div wrappers by their specific style properties */
+.topbar-filters > div {
+  min-width: 140px; /* Original size */
+}
+
+/* Responsive adjustment for your 430px device */
+@media (max-width: 430px) {
+  .topbar-filters > div {
+    min-width: 130px !important;
+    max-width: 130px !important;
+  }
+}
+
+/* Responsive adjustment for your 430px device */
+@media (max-width: 414px) {
+  .topbar-filters > div {
+    min-width: 125px !important;
+    max-width: 130px !important;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 390px) {
+  .topbar-filters > div {
+    min-width: 115px !important;
+    max-width: 120px !important;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 375px) {
+  .topbar-filters > div {
+    min-width: 110px !important;
+    max-width: 120px !important;
+  }
+}
+
 .chip-scroll-row {
   display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
   padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none; margin-bottom: 4px;
