@@ -739,7 +739,7 @@ body {
 }
 
 /* Extra small devices */
-@media (max-width: 390px) {
+@media (max-width: 400px) {
   .topbar-filters > div {
     min-width: 115px !important;
     max-width: 120px !important;
