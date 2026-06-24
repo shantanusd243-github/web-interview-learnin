@@ -1,11 +1,11 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './components/AppLayout';
-import { ProtectedRoute, AdminRoute, PublicRoute } from './components/guards'; // <-- Only ONE import line here!
+import { ProtectedRoute, AdminRoute, PublicRoute } from './components/guards';
 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage'; // <-- Added missing import
-import ResetPasswordPage from './pages/ResetPasswordPage';   // <-- Added missing import
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 import DashboardPage from './pages/DashboardPage';
 import QuestionsPage from './pages/QuestionsPage';
@@ -35,16 +35,18 @@ export default function App() {
       {/* Main Application (With Sidebar/Layout) */}
       <Route element={<AppLayout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
+
+        {/* Pages that are accessible without login (if any) */}
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/questions" element={<QuestionsPage />} />
         <Route path="/mock" element={<MockInterviewPage />} />
         <Route path="/cheat" element={<CheatSheetPage />} />
-        <Route path="/dsa" element={<DsaPage />} />
-        <Route path="/sysdesign" element={<SystemDesignPage />} />
         <Route path="/reference/:pageKey" element={<ReferencePage />} />
 
-        {/* Account-only */}
+        {/* 🔒 Protected Routes: Redirects to Login if not authenticated */}
         <Route element={<ProtectedRoute />}>
+          <Route path="/questions" element={<QuestionsPage />} /> {/* Moved here */}
+          <Route path="/dsa" element={<DsaPage />} />             {/* Moved here */}
+          <Route path="/sysdesign" element={<SystemDesignPage />} /> {/* Moved here */}
           <Route path="/bookmarks" element={<BookmarksPage />} />
           <Route path="/submit" element={<SubmitQuestionPage />} />
         </Route>
