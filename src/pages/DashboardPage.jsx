@@ -74,7 +74,17 @@ export default function DashboardPage() {
 
   const total = stats.totalQuestions;
   const pct = (n) => (total ? (n / total) * 100 : 0);
-  const goToTopic = (topic) => { setTopicFilter(topic); navigate('/questions'); };
+  const goToTopic = (topic, module = 'THEORY') => {
+    if (module === 'SYSTEM_DESIGN') {
+      // Pass the topic in the state payload so the next page can read it
+      navigate('/sysdesign', { state: { preselect: topic } });
+    } else if (module === 'DSA') {
+      navigate('/dsa', { state: { preselect: topic } });
+    } else {
+      setTopicFilter(topic);
+      navigate('/questions');
+    }
+  };
   const isPageLoading = loadingStats || loadingTopics;
 
   const getRadarColor = (level) => {

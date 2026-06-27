@@ -5,13 +5,35 @@ import QuestionCard from '../components/QuestionCard';
 import apiClient from '../api/client';
 import SkeletonCard from '../components/SkeletonCard';
 import SleekDropdown from '../components/SleekDropdown';
+import { useLocation } from 'react-router-dom';
 
 const CATEGORIES = ['Infrastructure', 'Storage', 'Real-time', 'Social', 'Commerce', 'AI'];
 
 export default function SystemDesignPage() {
   const { debouncedSearch } = useFilters();
+  const location = useLocation();
   const [cat, setCat] = useState('all');
   const [tag, setTag] = useState('all');
+
+  useEffect(() => {
+    if (location.state?.preselect) {
+      const pre = location.state.preselect;
+
+      // Check if the preselected topic is a Category
+      if (CATEGORIES.includes(pre)) {
+        setCat(pre);
+      } else if (pre === 'Social/Media') {
+        setCat('Social');
+      } else if (pre === 'AI/ML') {
+        setCat('AI');
+      } else {
+        // If it's not a category, assume it's a Tag
+        setTag(pre);
+      }
+      // Clear the router state so it doesn't get stuck if the user refreshes
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const [availableTags, setAvailableTags] = useState([]);
 

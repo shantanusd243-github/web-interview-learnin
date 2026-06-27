@@ -5,6 +5,7 @@ import QuestionCard from '../components/QuestionCard';
 import apiClient from '../api/client';
 import SkeletonCard from '../components/SkeletonCard';
 import SleekDropdown from '../components/SleekDropdown';
+import { useLocation } from 'react-router-dom';
 
 const WEEKS = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8'];
 const DIFFS = [
@@ -15,9 +16,31 @@ const DIFFS = [
 
 export default function DsaPage() {
   const { debouncedSearch } = useFilters();
+  const location = useLocation();
   const [week, setWeek] = useState('all');
   const [diff, setDiff] = useState('all');
   const [tag, setTag] = useState('all');
+
+  useEffect(() => {
+    if (location.state?.preselect) {
+      const pre = location.state.preselect;
+
+      // Check if it's a Week
+      if (WEEKS.includes(pre)) {
+        setWeek(pre);
+      }
+      // Check if it's a Difficulty
+      else if (DIFFS.some(d => d.label === pre)) {
+        setDiff(pre);
+      }
+      // Otherwise assume it's a Tag
+      else {
+        setTag(pre);
+      }
+
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const [availableTags, setAvailableTags] = useState([]);
 
