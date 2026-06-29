@@ -6,8 +6,14 @@ const JdInputModal = ({ isOpen, onClose, onSubmit, isLoading }) => {
 
   if (!isOpen) return null;
 
+  // Strict Limits based on Token Constraints
+  const MIN_CHARS = 200;
+  const MAX_CHARS = 8000;
+  const currentLength = jdText.trim().length;
+  const isValidLength = currentLength >= MIN_CHARS && currentLength <= MAX_CHARS;
+
   const handleSubmit = () => {
-    if (jdText.trim().length > 50) {
+    if (isValidLength) {
       onSubmit(jdText);
     }
   };
@@ -34,11 +40,22 @@ const JdInputModal = ({ isOpen, onClose, onSubmit, isLoading }) => {
           </p>
           <textarea
             className="w-full h-64 p-4 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none dark:text-slate-200"
-            placeholder="Paste Job Description here (e.g., 'Senior Java Developer required with 5+ years experience in Spring Boot, Microservices, and Kafka...')"
+            placeholder="Paste Job Description here (Min 200 chars)..."
             value={jdText}
             onChange={(e) => setJdText(e.target.value)}
             disabled={isLoading}
+            maxLength={MAX_CHARS + 500} // Let them paste a bit more, but prevent submission
           />
+
+          {/* Character Counter & Warning */}
+          <div className="flex justify-between items-center mt-2 text-xs">
+            <span className={`${currentLength < MIN_CHARS && currentLength > 0 ? 'text-amber-500' : 'text-slate-500'}`}>
+              {currentLength < MIN_CHARS ? `Minimum ${MIN_CHARS} characters required.` : 'Length looks good.'}
+            </span>
+            <span className={`${currentLength > MAX_CHARS ? 'text-red-500 font-bold' : 'text-slate-500'}`}>
+              {currentLength} / {MAX_CHARS}
+            </span>
+          </div>
         </div>
 
         {/* Footer */}
@@ -52,7 +69,7 @@ const JdInputModal = ({ isOpen, onClose, onSubmit, isLoading }) => {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={isLoading || jdText.trim().length < 50}
+            disabled={isLoading || !isValidLength}
             className="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg flex items-center gap-2 transition-all shadow-sm hover:shadow-md"
           >
             {isLoading ? (

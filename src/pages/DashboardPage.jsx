@@ -5,7 +5,7 @@ import { getDashboardSummary } from '../api/userActivity';
 import { useTopics } from '../hooks/useQuestions';
 import SkeletonDashboard from '../components/SkeletonDashboard';
 import JdInputModal from '../components/JdInputModal';
-// CLEAN API IMPORTS
+import { useAuth } from '../context/AuthContext';
 import { triggerJdAnalysisAsync, getAiPlan } from '../api/dashboard';
 import { Sparkles } from 'lucide-react';
 
@@ -55,6 +55,13 @@ export default function DashboardPage() {
     }).finally(() => setLoadingStats(false));
   }, []);
 
+    useEffect(() => {
+        if (localStorage.getItem('pendingJdModal') === 'true' && user) {
+          setIsJdModalOpen(true);
+          localStorage.removeItem('pendingJdModal');
+        }
+      }, [user]);
+
   const handleAnalyzeJd = async (jdText) => {
     setIsAnalyzing(true);
     try {
@@ -100,7 +107,18 @@ export default function DashboardPage() {
           <div className="section-title">{jdPlan ? `🎯 Target: ${jdPlan.role}` : '📊 Prep Dashboard'}</div>
           <div className="section-desc">{jdPlan ? `Difficulty Focus: ${jdPlan.difficulty}` : 'Senior Java Developer — Track progress by topic and difficulty.'}</div>
         </div>
-        <button onClick={() => setIsJdModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: '#4f46e5', color: '#fff', borderRadius: '8px', fontSize: '14px', fontWeight: 500, border: 'none', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+        <button
+          onClick={() => {
+            if (user) {
+              setIsJdModalOpen(true);
+            } else {
+              // Set the flag and force login
+              localStorage.setItem('pendingJdModal', 'true');
+              navigate('/login');
+            }
+          }}
+          style={{ /* your existing inline styles */ }}
+        >
           <Sparkles size={16} /> {jdPlan ? 'Change Target Role' : 'Target New Role'}
         </button>
       </div>
