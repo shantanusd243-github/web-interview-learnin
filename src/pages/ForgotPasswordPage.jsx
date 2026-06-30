@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1>☕ Java Prep</h1>
+        <h1>☕ LearnIn Prep</h1>
         <p className="auth-sub">Reset your password</p>
 
         {status.message && (

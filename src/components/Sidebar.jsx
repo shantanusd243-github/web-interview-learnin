@@ -53,8 +53,7 @@ export default function Sidebar({ open, onClose }) {
   return (
     <div className={`sidebar${open ? ' open' : ''}`} id="sidebar">
       <div className="sidebar-logo">
-        <h1>☕ Java Prep</h1>
-        <p>Senior Developer · 6–8 yrs</p>
+        <h1>☕ LearnIn Prep</h1>
       </div>
 
       {groups.map((group) => (

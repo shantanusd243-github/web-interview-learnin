@@ -36,7 +36,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const { setTopicFilter } = useFilters();
   const { data: dbTopics, isLoading: loadingTopics } = useTopics();
-
+  const { user } = useAuth();
   const [stats, setStats] = useState({ totalQuestions: 0, confidentCount: 0, revisingCount: 0, weakCount: 0, topicCounts: {} });
   const [loadingStats, setLoadingStats] = useState(true);
   const [isJdModalOpen, setIsJdModalOpen] = useState(false);
@@ -62,22 +62,25 @@ export default function DashboardPage() {
         }
       }, [user]);
 
-  const handleAnalyzeJd = async (jdText) => {
-    setIsAnalyzing(true);
-    try {
-      // ASYNC TRIGGER USING CLEAN API CALL
-      await triggerJdAnalysisAsync(jdText);
-      alert("Attack plan generation started! You'll get an email when your dashboard is ready.");
-      setIsJdModalOpen(false);
-    } catch (error) {
-      // THIS PRINTS THE EXACT ERROR TO YOUR BROWSER CONSOLE
-      console.error("API Error Details:", error);
-      const errorMsg = error.response?.data?.message || error.message || "Unknown error";
-      alert("Failed: " + errorMsg);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
+    const handleAnalyzeJd = async (jdText) => {
+      setIsAnalyzing(true);
+      try {
+        await triggerJdAnalysisAsync(jdText);
+        alert("Attack plan generation started! You'll get an email when your dashboard is ready.");
+        setIsJdModalOpen(false);
+      } catch (error) {
+        console.error("API Error Details:", error);
+
+        // Check if the error is the "Already in queue" message (409)
+        // or a general network failure
+        const errorMsg = (error.response && typeof error.response.data === 'string')
+                   ? error.response.data
+                   : (error.response?.data?.message || error.message || "An unexpected error occurred.");
+        alert("Oops! " + errorMsg);
+      } finally {
+        setIsAnalyzing(false);
+      }
+    };
 
   const total = stats.totalQuestions;
   const pct = (n) => (total ? (n / total) * 100 : 0);
@@ -100,6 +103,12 @@ export default function DashboardPage() {
     return { color: '#16a34a', badgeClass: 'badge-nice' };
   };
 
+  const getRadarWidth = (level) => {
+    if (level === 'Must Know') return { width: '95'};
+    if (level === 'Important') return { width: '70' };
+    return { width: '50'};
+  };
+
   return (
     <div id="page-dashboard" className="page active">
       <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
@@ -112,12 +121,23 @@ export default function DashboardPage() {
             if (user) {
               setIsJdModalOpen(true);
             } else {
-              // Set the flag and force login
               localStorage.setItem('pendingJdModal', 'true');
               navigate('/login');
             }
           }}
-          style={{ /* your existing inline styles */ }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: '#4f46e5',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            fontSize: '14px',
+            fontWeight: 600,
+            border: 'none',
+            cursor: 'pointer'
+          }}
         >
           <Sparkles size={16} /> {jdPlan ? 'Change Target Role' : 'Target New Role'}
         </button>
@@ -154,13 +174,14 @@ export default function DashboardPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: '320px', overflowY: 'auto', paddingRight: '8px' }}>
                 {jdPlan ? jdPlan.radarData.map((item) => {
                     const { color, badgeClass } = getRadarColor(item.level);
+                    const { width } = getRadarWidth(item.level);
                     return (
-                      <div key={item.topic} style={{ cursor: 'pointer' }} onClick={() => goToTopic(item.topic)}>
+                      <div key={item.topic} style={{ cursor: 'pointer' }} onClick={() => goToTopic(item.topic, item.module)}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4, gap: 8 }}>
                           <span style={{ fontWeight: 600, flex: 1, color: '#0f172a' }}>{item.topic}</span>
                           <span className={`badge ${badgeClass}`}>{item.level}</span>
                         </div>
-                        <div className="progress-bar"><div className="progress-fill" style={{ background: color, width: '85%' }} /></div>
+                        <div className="progress-bar"><div className="progress-fill" style={{ background: color, width: `${width}%` }} /></div>
                       </div>
                     );
                 }) : [
@@ -209,7 +230,7 @@ export default function DashboardPage() {
               <div style={{ fontSize: 14, fontWeight: 700, margin: '24px 0 12px', color: '#0f172a' }}>Targeted Focus Areas</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 24 }}>
                 {jdPlan.focusAreas.map((area) => (
-                   <div key={area.title} className="card" style={{ cursor: 'pointer', padding: '16px' }} onClick={() => goToTopic(area.title)}>
+                   <div key={area.title} className="card" style={{ cursor: 'pointer', padding: '16px' }} onClick={() => goToTopic(area.title, area.module)}>
                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                        <span style={{ fontSize: '20px' }}>{getIconForTopic(area.title)}</span>
                        <h4 style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a', margin: 0 }}>{area.title}</h4>

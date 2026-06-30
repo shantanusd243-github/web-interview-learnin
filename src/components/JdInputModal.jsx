@@ -8,13 +8,13 @@ const JdInputModal = ({ isOpen, onClose, onSubmit, isLoading }) => {
 
   // Strict Limits based on Token Constraints
   const MIN_CHARS = 200;
-  const MAX_CHARS = 8000;
+  const MAX_CHARS = 2400;
   const currentLength = jdText.trim().length;
   const isValidLength = currentLength >= MIN_CHARS && currentLength <= MAX_CHARS;
 
-  const handleSubmit = () => {
+const handleSubmit = () => {
     if (isValidLength) {
-      onSubmit(jdText);
+      onSubmit(jdText); // This triggers the handleAnalyzeJd function from your DashboardPage
     }
   };
 
