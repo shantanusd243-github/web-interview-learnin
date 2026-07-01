@@ -1,8 +1,3 @@
-export function priorityBadgeClass(p) {
-  const map = { 'Must Know': 'badge-must', Important: 'badge-important', 'Nice to Know': 'badge-nice' };
-  return map[p] || 'badge-topic';
-}
-
 export function difficultyBadgeClass(d) {
   if (!d) return 'badge-topic';
   const map = {
@@ -15,6 +10,22 @@ export function difficultyBadgeClass(d) {
     Hard: 'badge-hard',
   };
   return map[d] || `badge-${d.toLowerCase()}`;
+}
+
+export function priorityBadgeClass(priority) {
+  switch (priority) {
+    case 'MUST_KNOW':
+    case 'Must Know': // Keep the old one just in case during transition
+      return 'badge-red'; // or whatever your class is
+    case 'IMPORTANT':
+    case 'Important':
+      return 'badge-yellow';
+    case 'NICE_TO_KNOW':
+    case 'Nice to Know':
+      return 'badge-green';
+    default:
+      return 'badge-default';
+  }
 }
 
 export const TOPIC_ICONS = {

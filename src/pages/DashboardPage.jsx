@@ -97,15 +97,15 @@ export default function DashboardPage() {
   };
   const isPageLoading = loadingStats || loadingTopics;
 
-  const getRadarColor = (level) => {
-    if (level === 'Must Know') return { color: '#dc2626', badgeClass: 'badge-must' };
-    if (level === 'Important') return { color: '#d97706', badgeClass: 'badge-important' };
+const getRadarColor = (level) => {
+    if (level === 'MUST_KNOW' || level === 'Must Know') return { color: '#dc2626', badgeClass: 'badge-must' };
+    if (level === 'IMPORTANT' || level === 'Important') return { color: '#d97706', badgeClass: 'badge-important' };
     return { color: '#16a34a', badgeClass: 'badge-nice' };
   };
 
   const getRadarWidth = (level) => {
-    if (level === 'Must Know') return { width: '95'};
-    if (level === 'Important') return { width: '70' };
+    if (level === 'MUST_KNOW' || level === 'Must Know') return { width: '95'};
+    if (level === 'IMPORTANT' || level === 'Important') return { width: '70' };
     return { width: '50'};
   };
 

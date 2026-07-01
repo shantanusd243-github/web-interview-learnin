@@ -14,6 +14,15 @@ function nl2br(text) {
   ));
 }
 
+function formatPriorityUI(apiPriority) {
+  const map = {
+    "MUST_KNOW": "Must Know",
+    "IMPORTANT": "Important",
+    "NICE_TO_KNOW": "Nice to Know"
+  };
+  return map[apiPriority] || apiPriority;
+}
+
 function QuestionBody({ q }) {
   if (q.questionType === 'DSA') {
     return (
@@ -255,7 +264,7 @@ const handleBookmarkClick = (e) => {
                 {t}
               </span>
             ))}
-            {q.priority && <span className={`badge ${priorityBadgeClass(q.priority)}`}>{q.priority}</span>}
+            {q.priority && <span className={`badge ${priorityBadgeClass(q.priority)}`}>{formatPriorityUI(q.priority)}</span>}
             {q.difficulty && <span className={`badge ${difficultyBadgeClass(q.difficulty)}`}>{q.difficulty}</span>}
             {q.time && <span style={{ fontSize: 11, color: '#64748b' }}>⏱️ {q.time}</span>}
           </div>

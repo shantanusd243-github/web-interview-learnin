@@ -3,7 +3,22 @@ import { useTopics } from '../hooks/useQuestions';
 import { useFilters } from '../context/FilterContext';
 import ThemeToggle from './ThemeToggle'; // <-- 1. ADD THIS IMPORT
 import SleekDropdown from './SleekDropdown';
-const PRIORITIES  = ['Must Know', 'Important', 'Nice to Know'];
+const PRIORITY_LABELS = ['All Priority', 'Must Know', 'Important', 'Nice to Know'];
+
+const priorityToApi = {
+  'Must Know': 'MUST_KNOW',
+  'Important': 'IMPORTANT',
+  'Nice to Know': 'NICE_TO_KNOW',
+  'All Priority': ''
+};
+
+const apiToPriority = {
+  'MUST_KNOW': 'Must Know',
+  'IMPORTANT': 'Important',
+  'NICE_TO_KNOW': 'Nice to Know',
+  '': 'All Priority'
+};
+
 const DIFFICULTIES = ['Beginner', 'Intermediate', 'Advanced', 'Senior'];
 
 const NON_THEORY_TOPICS = [
@@ -76,9 +91,9 @@ return (
 
         {/* Priority Dropdown */}
         <SleekDropdown
-          value={priority || "All Priority"}
-          options={['All Priority', ...PRIORITIES]}
-          onChange={(val) => setPriority(val === 'All Priority' ? '' : val)}
+          value={apiToPriority[priority] || "All Priority"}
+          options={PRIORITY_LABELS}
+          onChange={(val) => setPriority(priorityToApi[val])}
         />
 
         {/* Difficulty Dropdown */}
