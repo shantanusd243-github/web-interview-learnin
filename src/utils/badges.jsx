@@ -12,20 +12,21 @@ export function difficultyBadgeClass(d) {
   return map[d] || `badge-${d.toLowerCase()}`;
 }
 
-export function priorityBadgeClass(priority) {
-  switch (priority) {
-    case 'MUST_KNOW':
-    case 'Must Know': // Keep the old one just in case during transition
-      return 'badge-red'; // or whatever your class is
-    case 'IMPORTANT':
-    case 'Important':
-      return 'badge-yellow';
-    case 'NICE_TO_KNOW':
-    case 'Nice to Know':
-      return 'badge-green';
-    default:
-      return 'badge-default';
-  }
+export function priorityBadgeClass(p) {
+  const map = {
+    // Add the new Enum strings from the API
+    'MUST_KNOW': 'badge-must',
+    'IMPORTANT': 'badge-important',
+    'NICE_TO_KNOW': 'badge-nice',
+
+    // Keep the old ones just in case any cached data exists in local state
+    'Must Know': 'badge-must',
+    'Important': 'badge-important',
+    'Nice to Know': 'badge-nice'
+  };
+
+  // If it doesn't match any of the above, it drops the color
+  return map[p] || 'badge-topic';
 }
 
 export const TOPIC_ICONS = {
