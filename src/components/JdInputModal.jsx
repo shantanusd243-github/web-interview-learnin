@@ -8,7 +8,7 @@ const JdInputModal = ({ isOpen, onClose, onSubmit, isLoading }) => {
 
   // Strict Limits based on Token Constraints
   const MIN_CHARS = 200;
-  const MAX_CHARS = 2400;
+  const MAX_CHARS = 3000;
   const currentLength = jdText.trim().length;
   const isValidLength = currentLength >= MIN_CHARS && currentLength <= MAX_CHARS;
 

@@ -12,3 +12,15 @@ export const getAiPlan = async () => {
     const response = await apiClient.get('/v1/dashboard/ai-plan');
     return response;
 };
+
+// NEW: Fetch the history of analyzed JDs
+export const getJdHistory = async () => {
+    const response = await apiClient.get('/v1/dashboard/jd-history');
+    return response.data;
+};
+
+// NEW: Switch the active JD analysis
+export const switchActiveJd = async (planId) => {
+    const response = await apiClient.post(`/v1/dashboard/jd-history/${planId}/activate`);
+    return response.data;
+};
