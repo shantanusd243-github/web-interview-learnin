@@ -131,7 +131,7 @@ export default function DashboardPage() {
     if (module === 'SYSTEM_DESIGN') {
       navigate('/sysdesign', { state: { preselect: topic } });
     } else if (module === 'DSA') {
-      navigate('/dsa', { state: { preselect: topic } });
+      navigate('/dsa');
     } else {
       setTopicFilter(topic);
       navigate('/questions');
@@ -288,7 +288,7 @@ export default function DashboardPage() {
                   </div>
                 )}
           </div>
-
+        {(!user || user?.roles?.some(role => ['TESTER', 'ADMIN'].includes(role))) && (
         <button
             className="btn btn-primary"
             onClick={() => {
@@ -308,6 +308,7 @@ export default function DashboardPage() {
             <Sparkles size={16} />
             {jdPlan ? 'Change target role' : 'Target New Role'}
           </button>
+          )}
         </div>
       </div>
 
