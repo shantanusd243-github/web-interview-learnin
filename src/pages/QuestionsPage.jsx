@@ -10,7 +10,14 @@ export default function QuestionsPage() {
 
   // 1. Clean Mapping: If it's "All Topics", send empty string so backend returns everything.
   const apiTopic = (!topic || topic === 'All Topics') ? '' : topic;
-  const apiPriority = (!priority || priority === 'All Priority') ? '' : priority;
+
+  const priorityApiMap = {
+      "Must Know": "MUST_KNOW",
+      "Important": "IMPORTANT",
+      "Nice to Know": "NICE_TO_KNOW"
+    };
+  const mappedPriority = priorityApiMap[priority] || priority;
+  const apiPriority = (!mappedPriority || mappedPriority === 'All Priority') ? '' : mappedPriority;
   const apiDifficulty = (!difficulty || difficulty === 'All Levels') ? '' : difficulty;
 
   // 2. Initialize the hook

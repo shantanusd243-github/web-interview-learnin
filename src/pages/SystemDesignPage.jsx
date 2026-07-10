@@ -5,27 +5,52 @@ import QuestionCard from '../components/QuestionCard';
 import apiClient from '../api/client';
 import SkeletonCard from '../components/SkeletonCard';
 import SleekDropdown from '../components/SleekDropdown';
-
-const CATEGORIES = ['Infrastructure', 'Storage', 'Real-time', 'Social', 'Commerce', 'AI'];
+import { useLocation } from 'react-router-dom';
 
 export default function SystemDesignPage() {
   const { debouncedSearch } = useFilters();
+  const location = useLocation();
+
   const [cat, setCat] = useState('all');
   const [tag, setTag] = useState('all');
 
+  const [availableCategories, setAvailableCategories] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
+
+  // Fetch dynamic categories & tags
+  useEffect(() => {
+      const timer = setTimeout(() => {
+          apiClient.get('/questions?type=SYSTEM_DESIGN&size=1000')
+              .then(res => {
+                  const qs = res.data?.content || res.data || [];
+                  const tags = [...new Set(qs.flatMap(q => q.tags || []))].filter(Boolean).sort();
+                  const categories = [...new Set(qs.map(q => q.category).filter(Boolean))].sort();
+
+                  setAvailableTags(tags);
+                  setAvailableCategories(categories);
+
+                  if (location.state?.preselect) {
+                      const pre = location.state.preselect;
+                      const matchedCat = categories.find(c => {
+                          const cLower = c.toLowerCase();
+                          const preLower = pre.toLowerCase();
+                          return cLower === preLower || preLower.includes(cLower) || cLower.includes(preLower);
+                      });
+
+                      if (matchedCat) {
+                          setCat(matchedCat);
+                      } else {
+                          setTag(pre);
+                      }
+                      window.history.replaceState({}, document.title);
+                  }
+              }).catch(e => console.error("Failed to load metadata", e));
+      }, 500);
+      return () => clearTimeout(timer);
+  }, [location.state]);
 
   const apiCat = cat === 'all' ? '' : cat;
   const apiTag = tag === 'all' ? '' : tag;
-
-  useEffect(() => {
-      apiClient.get('/questions?type=SYSTEM_DESIGN&size=1000')
-          .then(res => {
-              const qs = res.data?.content || res.data || [];
-              const tags = [...new Set(qs.flatMap(q => q.tags || []))].filter(Boolean).sort();
-              setAvailableTags(tags);
-          }).catch(e => console.error("Failed to load tags", e));
-  }, []);
 
   const { questions, loading, hasMore, loadMore, updateFilters } = useQuestions({
       type: 'SYSTEM_DESIGN',
@@ -58,7 +83,15 @@ export default function SystemDesignPage() {
       if (!grouped[key]) grouped[key] = [];
       grouped[key].push(q);
     }
-    return grouped;
+
+    const sortedGroups = {};
+    Object.keys(grouped)
+      .sort((a, b) => a.localeCompare(b))
+      .forEach(key => {
+        sortedGroups[key] = grouped[key];
+      });
+
+    return sortedGroups;
   }, [questions]);
 
   return (
@@ -72,20 +105,16 @@ export default function SystemDesignPage() {
           </div>
         </div>
 
-{/* --- WRAPPING CHIPS & RIGHT DROPDOWN FIX --- */}
          <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
-
-            {/* Left Side: Wrapping Chips (Max 2 rows, then scroll) */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', flex: 1, maxHeight: '82px', overflowY: 'auto', alignContent: 'flex-start', paddingRight: '4px' }}>
               <button className={`filter-chip${cat === 'all' ? ' active' : ''}`} onClick={() => setCat('all')}>All</button>
-              {CATEGORIES.map((c) => (
+              {availableCategories.map((c) => (
                 <button key={c} className={`filter-chip${cat === c ? ' active' : ''}`} onClick={() => setCat(c)}>
-                  {c === 'Social' ? 'Social/Media' : c === 'AI' ? 'AI/ML' : c}
+                  {c}
                 </button>
               ))}
             </div>
 
-            {/* Right Side: Tag Dropdown */}
             <div style={{ width: '160px', flexShrink: 0 }}>
               <SleekDropdown
                 value={tag === 'all' ? '🏷️ All Tags' : tag}
@@ -94,9 +123,7 @@ export default function SystemDesignPage() {
                 placeholder="🏷️ All Tags"
               />
             </div>
-
         </div>
-        {/* --- END FILTERS --- */}
 
         <div id="sdContainer">
           {loading && (

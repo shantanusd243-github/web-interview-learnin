@@ -54,7 +54,7 @@ export default function ResetPasswordPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1>☕ Java Prep</h1>
+        <h1>☕ LearnIn Prep</h1>
         <p className="auth-sub">Create a new password</p>
 
         {status.message && (

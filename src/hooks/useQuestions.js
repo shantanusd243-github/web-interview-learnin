@@ -27,8 +27,6 @@ const fetchQuestions = useCallback(async (pageNum, currentFilters, append = fals
                 ...currentFilters
             });
 
-            // THE FIX: Only sort by topic if it's a Theory question!
-            // This protects DSA and System Design from database crashes.
             if (currentFilters.type === 'THEORY') {
                 params.append('sort', 'topic,asc');
             }

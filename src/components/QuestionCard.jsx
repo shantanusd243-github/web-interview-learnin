@@ -14,6 +14,15 @@ function nl2br(text) {
   ));
 }
 
+function formatPriorityUI(apiPriority) {
+  const map = {
+    "MUST_KNOW": "Must Know",
+    "IMPORTANT": "Important",
+    "NICE_TO_KNOW": "Nice to Know"
+  };
+  return map[apiPriority] || apiPriority;
+}
+
 function QuestionBody({ q }) {
   if (q.questionType === 'DSA') {
     return (
@@ -115,12 +124,14 @@ const handleBookmarkClick = (e) => {
 
   // THE FIX: Pass the CURRENT state (localBookmarked) into the mutation.
   // If it's currently false, your hook will correctly fire the POST API.
-  toggleBookmark.mutate({ questionId: q.id, bookmarked: localBookmarked });
+  toggleBookmark.mutate({ questionId: q.id, bookmarked: next });
 
   setLocalBookmarked(next); // Instant UI change
 };
 
-  useEffect(() => {
+useEffect(() => {
+      let highlightTimer; // <-- 1. Add timer reference here
+
       if (open && q && q.id) {
           getNote(q.id).then(data => {
                 if (data && data.noteText) {
@@ -131,7 +142,8 @@ const handleBookmarkClick = (e) => {
 
           getHighlights(q.id).then(data => {
                 if (data && data.length > 0) {
-                    setTimeout(() => {
+                    // <-- 2. Assign the setTimeout to your variable
+                    highlightTimer = setTimeout(() => {
                         const container = document.getElementById(`qbody-${q.id}`);
                         if (container) {
                             data.forEach(hl => highlightTextNode(container, hl.highlightedText, hl.id));
@@ -140,6 +152,11 @@ const handleBookmarkClick = (e) => {
                 }
           }).catch(() => {});
       }
+
+      // <-- 3. Add the cleanup function here
+      return () => {
+          if (highlightTimer) clearTimeout(highlightTimer);
+      };
   }, [open, q]);
 
   const highlightTextNode = (node, text, id) => {
@@ -198,6 +215,16 @@ const handleBookmarkClick = (e) => {
     }
     setSelectionMenu({ visible: false, x: 0, y: 0, text: '', rangeObj: null });
   };
+useEffect(() => {
+    if (!selectionMenu.visible) return;
+
+    const handleScroll = () => {
+      setSelectionMenu({ visible: false, x: 0, y: 0, text: '', rangeObj: null });
+    };
+
+    window.addEventListener('scroll', handleScroll, true);
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, [selectionMenu.visible]);
 
   const handleAskAI = (e) => {
       e.stopPropagation();
@@ -255,7 +282,7 @@ const handleBookmarkClick = (e) => {
                 {t}
               </span>
             ))}
-            {q.priority && <span className={`badge ${priorityBadgeClass(q.priority)}`}>{q.priority}</span>}
+            {q.priority && <span className={`badge ${priorityBadgeClass(q.priority)}`}>{formatPriorityUI(q.priority)}</span>}
             {q.difficulty && <span className={`badge ${difficultyBadgeClass(q.difficulty)}`}>{q.difficulty}</span>}
             {q.time && <span style={{ fontSize: 11, color: '#64748b' }}>⏱️ {q.time}</span>}
           </div>

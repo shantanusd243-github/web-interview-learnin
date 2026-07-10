@@ -5,34 +5,87 @@ import QuestionCard from '../components/QuestionCard';
 import apiClient from '../api/client';
 import SkeletonCard from '../components/SkeletonCard';
 import SleekDropdown from '../components/SleekDropdown';
+import { useLocation } from 'react-router-dom';
 
-const WEEKS = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8'];
-const DIFFS = [
-  { label: 'Easy', style: { background: '#dcfce7', color: '#16a34a', borderColor: '#bbf7d0' } },
-  { label: 'Medium', style: { background: '#fef9c3', color: '#ca8a04', borderColor: '#fde68a' } },
-  { label: 'Hard', style: { background: '#fee2e2', color: '#dc2626', borderColor: '#fecaca' } },
-];
+// UI Mapping for standard difficulties (Keep styling, but actual diffs are dynamic)
+const DIFF_STYLES = {
+  'Easy': { background: '#dcfce7', color: '#16a34a', borderColor: '#bbf7d0' },
+  'Medium': { background: '#fef9c3', color: '#ca8a04', borderColor: '#fde68a' },
+  'Hard': { background: '#fee2e2', color: '#dc2626', borderColor: '#fecaca' },
+};
 
 export default function DsaPage() {
   const { debouncedSearch } = useFilters();
+  const location = useLocation();
+
   const [week, setWeek] = useState('all');
   const [diff, setDiff] = useState('all');
   const [tag, setTag] = useState('all');
 
+  // DYNAMIC STATES: No more hardcoded arrays
+  const [availableWeeks, setAvailableWeeks] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
+  const [availableDiffs, setAvailableDiffs] = useState(['Easy', 'Medium', 'Hard']); // Defaults
+
+  // Fetch dynamic weeks, tags, & difficulties, then process the preselect routing
+  useEffect(() => {
+      const timer = setTimeout(() => {
+          apiClient.get('/questions?type=DSA&size=1000')
+              .then(res => {
+                  const qs = res.data?.content || res.data || [];
+
+                  // Extract dynamic tags, weeks, and difficulties
+                  const tags = [...new Set(qs.flatMap(q => q.tags || []))].filter(Boolean).sort();
+
+                  // Numeric sort ensures "Week 10" comes after "Week 9" instead of "Week 1"
+                  const weeks = [...new Set(qs.map(q => q.week).filter(Boolean))]
+                                 .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+                  const diffs = [...new Set(qs.map(q => q.difficulty).filter(Boolean))];
+
+                  setAvailableTags(tags);
+                  setAvailableWeeks(weeks);
+
+                  // Sort difficulties logically (Easy -> Medium -> Hard)
+                  if (diffs.length > 0) {
+                      const diffOrder = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
+                      diffs.sort((a, b) => (diffOrder[a] || 99) - (diffOrder[b] || 99));
+                      setAvailableDiffs(diffs);
+                  }
+
+                  // Handle routing preselect dynamically
+                  if (location.state?.preselect) {
+                      const pre = location.state.preselect;
+                      const preLower = pre.toLowerCase();
+
+                      // Dynamic Matcher: Checks for exact matches OR partial overlaps (e.g., 'week 1' matches 'Week 1')
+                      const matchedWeek = weeks.find(w => {
+                          const wLower = w.toLowerCase();
+                          return wLower === preLower || wLower.includes(preLower) || preLower.includes(wLower);
+                      });
+
+                      const matchedDiff = diffs.find(d => d.toLowerCase() === preLower);
+
+                      if (matchedWeek) {
+                          setWeek(matchedWeek);
+                      } else if (matchedDiff) {
+                          setDiff(matchedDiff);
+                      } else {
+                          setTag(pre);
+                      }
+
+                      // Clear the router state so it doesn't get stuck if the user refreshes
+                      window.history.replaceState({}, document.title);
+                  }
+              }).catch(e => console.error("Failed to load metadata", e));
+      }, 500);
+
+      return () => clearTimeout(timer);
+  }, [location.state]);
 
   const apiWeek = week === 'all' ? '' : week;
   const apiDiff = diff === 'all' ? '' : diff;
   const apiTag = tag === 'all' ? '' : tag;
-
-  useEffect(() => {
-      apiClient.get('/questions?type=DSA&size=1000')
-          .then(res => {
-              const qs = res.data?.content || res.data || [];
-              const tags = [...new Set(qs.flatMap(q => q.tags || []))].filter(Boolean).sort();
-              setAvailableTags(tags);
-          }).catch(e => console.error("Failed to load tags", e));
-  }, []);
 
   const { questions, loading, hasMore, loadMore, updateFilters } = useQuestions({
       type: 'DSA',
@@ -60,6 +113,7 @@ export default function DsaPage() {
       return () => window.removeEventListener('scroll', handleScroll);
   }, [loadMore, loading, hasMore]);
 
+  // STABLE SORTING: Numeric sort for dynamic weeks so DOM grouping doesn't bounce around
   const byWeek = useMemo(() => {
     const grouped = {};
     for (const q of questions) {
@@ -67,7 +121,10 @@ export default function DsaPage() {
       if (!grouped[key]) grouped[key] = [];
       grouped[key].push(q);
     }
-    return Object.fromEntries(Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b)));
+
+    return Object.fromEntries(
+        Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
+    );
   }, [questions]);
 
   return (
@@ -81,23 +138,27 @@ export default function DsaPage() {
           </div>
         </div>
 
-{/* --- WRAPPING CHIPS & RIGHT DROPDOWN FIX --- */}
+        {/* --- WRAPPING CHIPS & RIGHT DROPDOWN FIX --- */}
         <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
 
-          {/* Left Side: Wrapping Chips (Max 2 rows, then scroll) */}
+          {/* Left Side: Dynamic Wrapping Chips */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', flex: 1, maxHeight: '82px', overflowY: 'auto', alignContent: 'flex-start', paddingRight: '4px' }}>
             <button className={`filter-chip${week === 'all' ? ' active' : ''}`} onClick={() => setWeek('all')}>All</button>
-            {WEEKS.map((w) => (
+            {availableWeeks.map((w) => (
               <button key={w} className={`filter-chip${week === w ? ' active' : ''}`} onClick={() => setWeek(w)}>{w}</button>
             ))}
-            {DIFFS.map((d) => (
-             <button key={d.label} className={`filter-chip${diff === d.label ? ' active' : ''}`} style={d.style} onClick={() => setDiff((cur) => (cur === d.label ? 'all' : d.label))}>
-                 {d.label}
-              </button>
-            ))}
+            {availableDiffs.map((d) => {
+             // Use pre-defined styles if available, otherwise fallback to generic styling
+             const style = DIFF_STYLES[d] || { background: '#f3f4f6', color: '#374151', borderColor: '#d1d5db' };
+             return (
+                 <button key={d} className={`filter-chip${diff === d ? ' active' : ''}`} style={style} onClick={() => setDiff((cur) => (cur === d ? 'all' : d))}>
+                     {d}
+                  </button>
+             );
+            })}
           </div>
 
-          {/* Right Side: Tag Dropdown */}
+          {/* Right Side: Dynamic Tag Dropdown */}
           <div style={{ width: '160px', flexShrink: 0 }}>
             <SleekDropdown
               value={tag === 'all' ? '🏷️ All Tags' : tag}

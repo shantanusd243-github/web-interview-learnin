@@ -46,7 +46,7 @@ export default function LoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1>☕ Java Prep</h1>
+        <h1>☕ LearnIn Prep</h1>
         <p className="auth-sub">Sign in to track progress and bookmarks.</p>
 
         {error && <div className="auth-error">{error}</div>}

@@ -1,6 +1,10 @@
 import { useState } from 'react';
 
-const PRIORITIES = ['Must Know', 'Important', 'Nice to Know'];
+const PRIORITIES = [
+  { value: 'MUST_KNOW', label: 'Must Know' },
+  { value: 'IMPORTANT', label: 'Important' },
+  { value: 'NICE_TO_KNOW', label: 'Nice to Know' }
+];
 const DIFFICULTIES = ['Beginner', 'Intermediate', 'Advanced', 'Senior', 'Easy', 'Medium', 'Hard'];
 
 const csv = (arr) => (arr || []).join(', ');
@@ -114,8 +118,8 @@ export default function QuestionApprovalForm({ form, setForm }) {
           <select value={form.priority} onChange={update('priority')}>
             <option value="">—</option>
             {PRIORITIES.map((p) => (
-              <option key={p} value={p}>
-                {p}
+              <option key={p.value} value={p.value}>
+                {p.label}
               </option>
             ))}
           </select>
