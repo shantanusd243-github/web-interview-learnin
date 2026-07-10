@@ -175,7 +175,7 @@ export default function DashboardPage() {
 
           {/* History Dropdown */}
           <div style={{ position: 'relative' }} ref={dropdownRef}>
-
+         {(!user || user?.roles?.some(role => ['TESTER', 'ADMIN'].includes(role))) && (
           <button
             className="btn btn-secondary"
             onClick={() => setIsHistoryOpen(!isHistoryOpen)}
@@ -200,7 +200,7 @@ export default function DashboardPage() {
             )}
             <ChevronDown size={14} />
           </button>
-
+          )}
             {/* Dropdown Panel with Scrollbar */}
             {isHistoryOpen && (
               <div className="card" style={{
