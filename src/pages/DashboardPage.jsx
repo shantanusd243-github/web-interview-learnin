@@ -60,6 +60,12 @@ export default function DashboardPage() {
   const [isSwitching, setIsSwitching] = useState(false);
   const dropdownRef = useRef(null);
 
+  // Responsive state for inline styles
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
+
+  // Check if user has permission to see JD actions
+  const hasJdAccess = !user || (user?.roles && user.roles.some(role => ['TESTER', 'ADMIN'].includes(role)));
+
   const loadDashboardData = () => {
     setLoadingStats(true);
     Promise.all([
@@ -77,14 +83,25 @@ export default function DashboardPage() {
     loadDashboardData();
   }, []);
 
+  // Handle outside click for dropdown and window resize for mobile responsiveness
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsHistoryOpen(false);
       }
     };
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 640);
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   useEffect(() => {
@@ -154,11 +171,19 @@ export default function DashboardPage() {
   return (
     <div id="page-dashboard" className="page active">
 
-      {/* UPDATED HEADER BAR: Using className="card" adapts automatically to Dark Mode */}
-      <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '24px', padding: '16px 20px', flexWrap: 'wrap' }}>
+      {/* UPDATED HEADER BAR: Fully responsive on mobile */}
+      <div className="card" style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '16px',
+        marginBottom: '24px',
+        padding: '16px 20px',
+        flexWrap: 'wrap'
+      }}>
 
         {/* Left: title + subtitle */}
-        <div>
+        <div style={{ minWidth: '250px', flex: '1 1 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '18px' }}>🎯</span>
             <span style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
@@ -170,146 +195,167 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Right: JD history dropdown + Change Target Role button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+        {/* Right: Actions wrapper that automatically stacks on mobile screen sizes */}
+        {hasJdAccess && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            flexWrap: 'wrap',
+            width: '100%',
+            maxWidth: isMobile ? '100%' : 'max-content',
+            justifyContent: isMobile ? 'stretch' : 'flex-end'
+          }}>
 
-          {/* History Dropdown */}
-          <div style={{ position: 'relative' }} ref={dropdownRef}>
-         {(!user || user?.roles?.some(role => ['TESTER', 'ADMIN'].includes(role))) && (
-          <button
-            className="btn btn-secondary"
-            onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              borderRadius: '8px', padding: '8px 14px',
-              fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <History size={16} />
-            <span style={{ opacity: 1 }}>JD History</span>
-            {jdHistory.length > 0 && (
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                backgroundColor: '#4f46e5', color: '#ffffff', /* Using backgroundColor to bypass your CSS hacker */
-                fontSize: '11px', fontWeight: 700, borderRadius: '12px',
-                padding: '2px 8px', minWidth: '20px', border: 'none'
-              }}>
-                {jdHistory.length}
-              </span>
-            )}
-            <ChevronDown size={14} />
-          </button>
-          )}
-            {/* Dropdown Panel with Scrollbar */}
-            {isHistoryOpen && (
-              <div className="card" style={{
-                position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                padding: 0, minWidth: '320px', zIndex: 50,
-                maxHeight: '350px', // FIX 1: Max Height for scroll
-                overflowY: 'auto',  // FIX 1: Scrollbar enabled
-                overflowX: 'hidden',
-                display: 'flex', flexDirection: 'column'
-              }}>
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
-                  <p style={{ margin: 0, fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Recent Analyses</p>
-                </div>
+            {/* History Dropdown Container */}
+            <div style={{ position: 'relative', flex: isMobile ? '1 1 0%' : 'initial' }} ref={dropdownRef}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  borderRadius: '8px', padding: '8px 14px',
+                  fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap',
+                  transition: 'all 0.2s ease',
+                  width: '100%' // ensures full width expansion inside flex layout
+                }}
+              >
+                <History size={16} />
+                <span>JD History</span>
+                {jdHistory.length > 0 && (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    backgroundColor: '#4f46e5', color: '#ffffff',
+                    fontSize: '11px', fontWeight: 700, borderRadius: '12px',
+                    padding: '2px 8px', minWidth: '20px', border: 'none'
+                  }}>
+                    {jdHistory.length}
+                  </span>
+                )}
+                <ChevronDown size={14} />
+              </button>
 
-                {/* SCROLLABLE LIST AREA - Only this part scrolls now! */}
-                <div style={{ maxHeight: '350px', overflowY: 'auto', overflowX: 'hidden' }}>
-                  {jdHistory.map((historyItem, index) => {
+              {/* Dropdown Panel with Mobile Cutoff Fix */}
+              {isHistoryOpen && (
+                <div className="card" style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 8px)',
 
-                    // FIX: Java serializes 'boolean isActive' to 'active' in the JSON response!
-                    const isItemActive = historyItem.active || historyItem.isActive;
-                    const hasAnyActive = jdHistory.some(item => item.active || item.isActive);
+                  // Left align on mobile so it doesn't expand off the left edge
+                  left: isMobile ? 0 : 'auto',
+                  right: isMobile ? 'auto' : 0,
 
-                    // If backend explicitly says it's active, use that. Otherwise fallback to index 0 for legacy data.
-                    const isActive = isItemActive || (!hasAnyActive && index === 0);
+                  padding: 0,
+                  // FIX: Removed '100vw' dependency. Using a safe solid pixel width for mobile.
+                  width: isMobile ? '300px' : '320px',
+                  zIndex: 999, // Extreme Z-Index to prevent being hidden under other cards
 
-                    return (
-                      <div
-                        key={historyItem.id}
-                        onClick={() => !isActive && handleSwitchJd(historyItem.id)}
-                        style={{
-                          display: 'flex', alignItems: 'flex-start', gap: '12px',
-                          padding: '12px 16px',
-                          backgroundColor: isActive ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
-                          borderBottom: '1px solid var(--border)',
-                          cursor: isActive ? 'default' : 'pointer',
-                          opacity: isSwitching && !isActive ? 0.5 : 1,
-                          transition: 'background 0.2s'
-                        }}
-                        onMouseOver={(e) => !isActive && (e.currentTarget.style.backgroundColor = 'var(--surface-1)')}
-                        onMouseOut={(e) => !isActive && (e.currentTarget.style.backgroundColor = 'transparent')}
-                      >
-                        <FileText size={16} color={isActive ? '#4f46e5' : 'var(--text-muted)'} style={{ marginTop: '2px', flexShrink: 0 }} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ margin: 0, fontSize: '13px', fontWeight: isActive ? 600 : 500, color: isActive ? '#4f46e5' : 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {historyItem.role} {historyItem.company ? `— ${historyItem.company}` : ''}
-                          </p>
-                          <p style={{ margin: '4px 0 0', fontSize: '11px', color: isActive ? '#4f46e5' : 'var(--text-muted)', opacity: isActive ? 0.9 : 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {formatRelativeTime(historyItem.createdAt)} · {historyItem.topSkills?.join(', ')}
-                          </p>
+                  maxHeight: '350px',
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'
+                }}>
+                  <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+                    <p style={{ margin: 0, fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                      Recent Analyses
+                    </p>
+                  </div>
+
+                  {/* SCROLLABLE LIST AREA */}
+                  <div style={{ overflowY: 'auto', overflowX: 'hidden', flex: 1 }}>
+                    {jdHistory.map((historyItem, index) => {
+                      const isItemActive = historyItem.active || historyItem.isActive;
+                      const hasAnyActive = jdHistory.some(item => item.active || item.isActive);
+                      const isActive = isItemActive || (!hasAnyActive && index === 0);
+
+                      return (
+                        <div
+                          key={historyItem.id}
+                          onClick={() => !isActive && handleSwitchJd(historyItem.id)}
+                          style={{
+                            display: 'flex', alignItems: 'flex-start', gap: '12px',
+                            padding: '12px 16px',
+                            backgroundColor: isActive ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
+                            borderBottom: '1px solid var(--border)',
+                            cursor: isActive ? 'default' : 'pointer',
+                            opacity: isSwitching && !isActive ? 0.5 : 1,
+                            transition: 'background 0.2s'
+                          }}
+                          onMouseOver={(e) => !isActive && (e.currentTarget.style.backgroundColor = 'var(--surface-1)')}
+                          onMouseOut={(e) => !isActive && (e.currentTarget.style.backgroundColor = 'transparent')}
+                        >
+                          <FileText size={16} color={isActive ? '#4f46e5' : 'var(--text-muted)'} style={{ marginTop: '2px', flexShrink: 0 }} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ margin: 0, fontSize: '13px', fontWeight: isActive ? 600 : 500, color: isActive ? '#4f46e5' : 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {historyItem.role} {historyItem.company ? `— ${historyItem.company}` : ''}
+                            </p>
+                            <p style={{ margin: '4px 0 0', fontSize: '11px', color: isActive ? '#4f46e5' : 'var(--text-muted)', opacity: isActive ? 0.9 : 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {formatRelativeTime(historyItem.createdAt)} · {historyItem.topSkills?.join(', ')}
+                            </p>
+                          </div>
+                          {isActive && (
+                            <span style={{
+                              fontSize: '10px', fontWeight: 600, backgroundColor: '#4f46e5', color: '#ffffff',
+                              borderRadius: '12px', padding: '2px 8px', flexShrink: 0, alignSelf: 'center'
+                            }}>Active</span>
+                          )}
                         </div>
-                        {isActive && (
-                          <span style={{
-                            fontSize: '10px', fontWeight: 600, backgroundColor: '#4f46e5', color: '#ffffff',
-                            borderRadius: '12px', padding: '2px 8px', flexShrink: 0, alignSelf: 'center'
-                          }}>Active</span>
-                        )}
-                      </div>
-                    )
-                  })}
+                      );
+                    })}
 
-              {jdHistory.length === 0 && (
-                <div style={{ padding: '24px 16px', textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)' }}>
-                  No history found.
+                    {jdHistory.length === 0 && (
+                      <div style={{ padding: '24px 16px', textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)' }}>
+                        No history found.
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
+                    <button
+                      onClick={() => {
+                        setIsHistoryOpen(false);
+                        setIsJdModalOpen(true);
+                      }}
+                      style={{
+                        width: '100%', textAlign: 'center', backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        border: 'none', borderRadius: '6px', fontSize: '12px', color: '#4f46e5', fontWeight: 600,
+                        cursor: 'pointer', padding: '8px 0', transition: 'background 0.2s'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(79, 70, 229, 0.2)'}
+                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(79, 70, 229, 0.1)'}
+                    >
+                      + Analyse a new JD
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
 
-                <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
-                      <button
-                        onClick={() => {
-                          setIsHistoryOpen(false);
-                          setIsJdModalOpen(true);
-                        }}
-                        style={{
-                          width: '100%', textAlign: 'center', backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                          border: 'none', borderRadius: '6px', fontSize: '12px', color: '#4f46e5', fontWeight: 600,
-                          cursor: 'pointer', padding: '8px 0', transition: 'background 0.2s'
-                        }}
-                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(79, 70, 229, 0.2)'}
-                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(79, 70, 229, 0.1)'}
-                      >
-                        + Analyse a new JD
-                      </button>
-                    </div>
-                  </div>
-                )}
+            {/* Primary action button */}
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                if (user) {
+                  setIsJdModalOpen(true);
+                } else {
+                  localStorage.setItem('pendingJdModal', 'true');
+                  navigate('/login');
+                }
+              }}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                padding: '8px 16px', borderRadius: '8px',
+                fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap',
+                flex: isMobile ? '1 1 0%' : 'initial'
+              }}
+            >
+              <Sparkles size={16} />
+              {jdPlan ? 'Change target role' : 'Target New Role'}
+            </button>
           </div>
-        {(!user || user?.roles?.some(role => ['TESTER', 'ADMIN'].includes(role))) && (
-        <button
-            className="btn btn-primary"
-            onClick={() => {
-              if (user) {
-                setIsJdModalOpen(true);
-              } else {
-                localStorage.setItem('pendingJdModal', 'true');
-                navigate('/login');
-              }
-            }}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '8px 16px', borderRadius: '8px',
-              fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap'
-            }}
-          >
-            <Sparkles size={16} />
-            {jdPlan ? 'Change target role' : 'Target New Role'}
-          </button>
-          )}
-        </div>
+        )}
       </div>
 
       {isPageLoading ? <SkeletonDashboard /> : (
