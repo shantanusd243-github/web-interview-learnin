@@ -8,6 +8,7 @@ import JdInputModal from '../components/JdInputModal';
 import { useAuth } from '../context/AuthContext';
 import { triggerJdAnalysisAsync, getAiPlan, getJdHistory, switchActiveJd } from '../api/dashboard';
 import { Sparkles, History, ChevronDown, FileText } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 const getIconForTopic = (topic) => {
   const iconMap = {
@@ -170,6 +171,10 @@ export default function DashboardPage() {
 
   return (
     <div id="page-dashboard" className="page active">
+        <Helmet>
+                <title>Dashboard | LearnIn Prep - Java & System Design</title>
+                <meta name="description" content="View your LearnIn Prep dashboard. Track your Java interview preparation, analyze Job Descriptions, and monitor your weak areas." />
+              </Helmet>
 
       {/* UPDATED HEADER BAR: Fully responsive on mobile */}
       <div className="card" style={{
@@ -186,9 +191,9 @@ export default function DashboardPage() {
         <div style={{ minWidth: '250px', flex: '1 1 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '18px' }}>🎯</span>
-            <span style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
-              {jdPlan ? `Target: ${jdPlan.role}` : 'Prep Dashboard'}
-            </span>
+                <h1 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', margin: 0, padding: 0 }}>
+                  {jdPlan ? `Target: ${jdPlan.role}` : 'LearnIn Prep Dashboard'}
+                </h1>
           </div>
           <p style={{ margin: '4px 0 0 30px', fontSize: '13px', color: 'var(--text-secondary)' }}>
             {jdPlan ? `Difficulty Focus: ${jdPlan.difficulty}` : 'Senior Java Developer — Track progress by topic.'}

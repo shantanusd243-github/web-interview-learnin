@@ -19,45 +19,51 @@ import SubmitQuestionPage from './pages/SubmitQuestionPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import NotFoundPage from './pages/NotFoundPage';
 
+// 1. Import HelmetProvider
+import { HelmetProvider } from 'react-helmet-async';
+
 export default function App() {
   return (
-    <Routes>
-      {/* Public Auth Pages (No Sidebar/Layout) */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/forgot-password" element={
-        <PublicRoute><ForgotPasswordPage /></PublicRoute>
-      } />
-      <Route path="/reset-password" element={
-        <PublicRoute><ResetPasswordPage /></PublicRoute>
-      } />
+    // 2. Wrap EVERYTHING in HelmetProvider
+    <HelmetProvider>
+      <Routes>
+        {/* Public Auth Pages (No Sidebar/Layout) */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={
+          <PublicRoute><ForgotPasswordPage /></PublicRoute>
+        } />
+        <Route path="/reset-password" element={
+          <PublicRoute><ResetPasswordPage /></PublicRoute>
+        } />
 
-      {/* Main Application (With Sidebar/Layout) */}
-      <Route element={<AppLayout />}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        {/* Main Application (With Sidebar/Layout) */}
+        <Route element={<AppLayout />}>
+          <Route index element={<Navigate to="/dashboard" replace />} />
 
-        {/* Pages that are accessible without login (if any) */}
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/mock" element={<MockInterviewPage />} />
-        <Route path="/cheat" element={<CheatSheetPage />} />
-        <Route path="/reference/:pageKey" element={<ReferencePage />} />
+          {/* Pages that are accessible without login (if any) */}
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/mock" element={<MockInterviewPage />} />
+          <Route path="/cheat" element={<CheatSheetPage />} />
+          <Route path="/reference/:pageKey" element={<ReferencePage />} />
 
-        {/* 🔒 Protected Routes: Redirects to Login if not authenticated */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/questions" element={<QuestionsPage />} /> {/* Moved here */}
-          <Route path="/dsa" element={<DsaPage />} />             {/* Moved here */}
-          <Route path="/sysdesign" element={<SystemDesignPage />} /> {/* Moved here */}
-          <Route path="/bookmarks" element={<BookmarksPage />} />
-          <Route path="/submit" element={<SubmitQuestionPage />} />
+          {/* 🔒 Protected Routes: Redirects to Login if not authenticated */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/questions" element={<QuestionsPage />} />
+            <Route path="/dsa" element={<DsaPage />} />
+            <Route path="/sysdesign" element={<SystemDesignPage />} />
+            <Route path="/bookmarks" element={<BookmarksPage />} />
+            <Route path="/submit" element={<SubmitQuestionPage />} />
+          </Route>
+
+          {/* Admin-only */}
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<AdminDashboardPage />} />
+          </Route>
+
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
-
-        {/* Admin-only */}
-        <Route element={<AdminRoute />}>
-          <Route path="/admin" element={<AdminDashboardPage />} />
-        </Route>
-
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
-    </Routes>
+      </Routes>
+    </HelmetProvider>
   );
 }
