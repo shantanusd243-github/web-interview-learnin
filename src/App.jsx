@@ -18,6 +18,7 @@ import BookmarksPage from './pages/BookmarksPage';
 import SubmitQuestionPage from './pages/SubmitQuestionPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import NotFoundPage from './pages/NotFoundPage';
+import LinkedInCallbackPage from './pages/LinkedInCallbackPage';
 
 // 1. Import HelmetProvider
 import { HelmetProvider } from 'react-helmet-async';
@@ -36,7 +37,7 @@ export default function App() {
         <Route path="/reset-password" element={
           <PublicRoute><ResetPasswordPage /></PublicRoute>
         } />
-
+        <Route path="/linkedin-callback" element={<LinkedInCallbackPage />} />
         {/* Main Application (With Sidebar/Layout) */}
         <Route element={<AppLayout />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
