@@ -151,10 +151,10 @@ export default function LoginPage() {
             <strong style={{ display: 'block', marginBottom: '4px' }}>In-App Browser Detected</strong>
             Google prevents signing in from here.
             {inAppBrowser.os === 'android'
-              ? ' Tap the Google button below to open Chrome.'
+              ? ' Tap the Google button below to securely continue in Chrome.'
               : inAppBrowser.os === 'ios' && inAppBrowser.canShare
-                ? ' Tap the Google button below and select Safari/Chrome.'
-                : ' Please tap the menu icon (•••) and select "Open in Safari/Chrome".'
+                ? " Tap the Google button below, then choose 'Open in Browser' or Safari."
+                : ' Please tap the menu icon (•••) and select "Open in System Browser" or Safari.'
             }
           </div>
         )}
