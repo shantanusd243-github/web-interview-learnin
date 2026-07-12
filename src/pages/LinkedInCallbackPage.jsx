@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { authApi } from '../api/auth'; // Only import authApi
 
 export default function LinkedInCallbackPage() {
-    const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { login } = useAuth();
+  // Only extract what you need
+  const { linkedinLogin } = useAuth();
   const [error, setError] = useState(null);
+
+  // Use a ref to strictly prevent double-firing in React 18 Strict Mode
+  const hasAttempted = useRef(false);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -21,24 +24,30 @@ export default function LinkedInCallbackPage() {
       return;
     }
 
-    if (code && !isProcessing) {
+    if (code) {
+      // If we haven't attempted the login yet, do it now.
+      if (!hasAttempted.current) {
+        hasAttempted.current = true;
         setIsProcessing(true);
-      // Call it as a method on the authApi object
-      authApi.linkedinLogin(code)
-        .then((data) => {
-          login(data);
-          navigate('/dashboard');
-        })
-        .catch((err) => {
+
+        linkedinLogin(code)
+          .then(() => {
+            navigate('/dashboard');
+          })
+          .catch((err) => {
             setIsProcessing(false);
-          console.error('LinkedIn authentication failed', err);
-          setError('Failed to securely log in with LinkedIn.');
-          setTimeout(() => navigate('/login'), 3000);
-        });
+            hasAttempted.current = false; // Allow retry on failure
+            console.error('LinkedIn authentication failed', err);
+            setError('Failed to securely log in with LinkedIn.');
+            setTimeout(() => navigate('/login'), 3000);
+          });
+      }
+      // Notice there is NO 'else' here. If code exists and we are processing, just wait.
     } else {
+      // If there is absolutely no code in the URL, send them away.
       navigate('/login');
     }
-  }, [location, login, navigate]);
+  }, [location, linkedinLogin, navigate]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">

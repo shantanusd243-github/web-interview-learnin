@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
 
 export default function LoginPage() {
-  // We extract the new googleLogin function from our AuthContext
   const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,7 +32,6 @@ export default function LoginPage() {
     setError('');
     setSubmitting(true);
     try {
-      // Send the Google ID token to the backend
       await googleLogin(credentialResponse.credential);
       navigate(from, { replace: true });
     } catch (err) {
@@ -43,12 +41,11 @@ export default function LoginPage() {
     }
   };
 
-const handleLinkedInLogin = () => {
+  const handleLinkedInLogin = () => {
     const clientId = import.meta.env.VITE_LINKEDIN_CLIENT_ID;
     const redirectUri = encodeURIComponent(import.meta.env.VITE_LINKEDIN_REDIRECT_URI);
     const scope = encodeURIComponent('openid profile email');
 
-    // Redirects user to LinkedIn OAuth screen
     window.location.href = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
   };
 
@@ -74,7 +71,6 @@ const handleLinkedInLogin = () => {
           </div>
 
           <div className="auth-field">
-            {/* Added Flexbox to put label and Forgot link on the same line */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
               <label htmlFor="password" style={{ marginBottom: 0 }}>Password</label>
               <Link to="/forgot-password" style={{ fontSize: '12px', color: '#10b981', textDecoration: 'none' }}>
@@ -123,22 +119,43 @@ const handleLinkedInLogin = () => {
           />
         </div>
 
-        {/* Example LinkedIn Button Styling - adjust classes to match your theme */}
-        <button
-          type="button"
-          onClick={handleLinkedInLogin}
-          className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 mt-3"
-        >
-          <svg
-            className="w-5 h-5 mr-2 text-[#0A66C2]"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
+        {/* LinkedIn Login Button */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px' }}>
+          <button
+            type="button"
+            onClick={handleLinkedInLogin}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '40px',          /* Matches Google size="large" */
+              minWidth: '187px',       /* Matches standard Google text width */
+              padding: '0 12px',
+              backgroundColor: '#131314', /* Matches Google filled_black theme */
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '4px',     /* Matches Google shape="rectangular" */
+              fontSize: '14px',
+              fontWeight: '500',
+              fontFamily: 'Roboto, Arial, sans-serif',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s',
+              boxShadow: '0 1px 2px 0 rgba(60,64,67,0.3)'
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#2b2b2b')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#131314')}
           >
-            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-          </svg>
-          Sign in with LinkedIn
-        </button>
+            <svg
+              style={{ width: '18px', height: '18px', marginRight: '10px', color: '#ffffff' }}
+              fill="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+            Sign in with LinkedIn
+          </button>
+        </div>
 
         <div className="auth-switch" style={{ marginTop: '24px' }}>
           New here? <Link to="/register">Create an account</Link>
