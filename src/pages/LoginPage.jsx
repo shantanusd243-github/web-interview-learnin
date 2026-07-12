@@ -153,8 +153,8 @@ export default function LoginPage() {
             {inAppBrowser.os === 'android'
               ? ' Tap the Google button below to open Chrome.'
               : inAppBrowser.os === 'ios' && inAppBrowser.canShare
-                ? ' Tap the Google button below and select Safari.'
-                : ' Please tap the menu icon (•••) and select "Open in Safari".'
+                ? ' Tap the Google button below and select Safari/Chrome.'
+                : ' Please tap the menu icon (•••) and select "Open in Safari/Chrome".'
             }
           </div>
         )}
