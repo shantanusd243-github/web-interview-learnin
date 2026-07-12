@@ -49,6 +49,13 @@ export function AuthProvider({ children }) {
     return data.user;
   }, []);
 
+  const linkedinLogin = useCallback(async (code) => {
+    const data = await authApi.linkedinLogin(code);
+    setTokens(data);
+    setUser(data.user);
+    return data.user;
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await authApi.logout();
@@ -63,7 +70,7 @@ export function AuthProvider({ children }) {
 
   // 3. Combined into a single, clean return statement
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout, isAdmin }}>
+    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, linkedinLogin, logout, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

@@ -16,6 +16,11 @@ export const authApi = {
     return response.data;
   },
 
+  linkedinLogin: async (code) => {
+    const response = await apiClient.post('/auth/linkedin', { code });
+    return response.data;
+  },
+
   forgotPassword: async (email) => {
     // Fixed: using apiClient instead of client
     const response = await apiClient.post(`/auth/forgot-password?email=${encodeURIComponent(email)}`);
