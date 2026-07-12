@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,6 +10,23 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const [inAppBrowser, setInAppBrowser] = useState({ isWebView: false, os: 'other', canShare: false });
+
+  useEffect(() => {
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      const isWebView = /Instagram|FBAN|FBAV|LinkedInApp|Slack/i.test(ua);
+
+      let os = 'other';
+      if (/android/i.test(ua)) os = 'android';
+      else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) os = 'ios';
+
+      setInAppBrowser({
+        isWebView,
+        os,
+        canShare: !!navigator.share
+      });
+    }, []);
 
   const from = location.state?.from?.pathname || '/dashboard';
 
@@ -27,11 +44,32 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
+    // Escape Hatch Logic
+    if (inAppBrowser.isWebView) {
+      if (inAppBrowser.os === 'android') {
+        // Android: Force open Chrome using Intent URL
+        const currentUrl = window.location.href.replace(/^https?:\/\//, '');
+        window.location.href = `intent://${currentUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
+      } else if (inAppBrowser.os === 'ios') {
+        // iOS: Attempt to use the native Share sheet to force an external open
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              url: window.location.href,
+            });
+          } catch (err) {
+            console.error('Share dialog failed or dismissed:', err);
+          }
+        }
+      }
+      return; // Stop standard execution
+  }
+
+    // Standard Browser Flow
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const redirectUri = encodeURIComponent(import.meta.env.VITE_GOOGLE_REDIRECT_URI);
     const scope = encodeURIComponent('openid profile email');
-
     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
   };
 
@@ -97,6 +135,29 @@ export default function LoginPage() {
           <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #334155', margin: '0 10px 0 0' }} />
           <span>OR</span>
           <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #334155', margin: '0 0 0 10px' }} />    </div>
+
+        {/* NEW: Inline Escape Banner */}
+        {inAppBrowser.isWebView && (
+          <div style={{
+            backgroundColor: 'rgba(234, 179, 8, 0.1)',
+            border: '1px solid rgba(234, 179, 8, 0.2)',
+            color: '#eab308',
+            padding: '12px',
+            borderRadius: '4px',
+            fontSize: '13px',
+            marginBottom: '12px',
+            lineHeight: '1.4'
+          }}>
+            <strong style={{ display: 'block', marginBottom: '4px' }}>In-App Browser Detected</strong>
+            Google prevents signing in from here.
+            {inAppBrowser.os === 'android'
+              ? ' Tap the Google button below to open Chrome.'
+              : inAppBrowser.os === 'ios' && inAppBrowser.canShare
+                ? ' Tap the Google button below and select Safari.'
+                : ' Please tap the menu icon (•••) and select "Open in Safari".'
+            }
+          </div>
+        )}
 
         {/* Custom Google Login Button */}
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
