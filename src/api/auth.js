@@ -11,8 +11,9 @@ export const authApi = {
 
   me: () => apiClient.get('/auth/me').then((r) => r.data),
 
-  googleLogin: async (idToken) => {
-    const response = await apiClient.post('/auth/google', { idToken });
+  googleLogin: async (code) => {
+    // We now send 'code' instead of 'idToken'
+    const response = await apiClient.post('/auth/google', { code });
     return response.data;
   },
 

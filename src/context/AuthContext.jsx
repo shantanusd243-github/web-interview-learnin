@@ -38,16 +38,16 @@ export function AuthProvider({ children }) {
     return data.user;
   }, []);
 
-  // 1. Moved inside the component and wrapped in useCallback for consistency
-  const googleLogin = useCallback(async (idToken) => {
-    const data = await authApi.googleLogin(idToken);
+    const googleLogin = useCallback(async (code) => {
+      // 1. Pass the 'code' instead of the old 'idToken'
+      const data = await authApi.googleLogin(code);
 
-    // 2. Used your existing setTokens utility instead of undefined setToken/setRefreshToken
-    setTokens(data);
-    setUser(data.user);
+      // 2. Your existing logic stays exactly the same
+      setTokens(data);
+      setUser(data.user);
 
-    return data.user;
-  }, []);
+      return data.user;
+    }, []);
 
   const linkedinLogin = useCallback(async (code) => {
     const data = await authApi.linkedinLogin(code);

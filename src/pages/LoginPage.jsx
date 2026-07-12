@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { GoogleLogin } from '@react-oauth/google';
 
 export default function LoginPage() {
   const { login, googleLogin } = useAuth();
@@ -28,17 +27,12 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    setError('');
-    setSubmitting(true);
-    try {
-      await googleLogin(credentialResponse.credential);
-      navigate(from, { replace: true });
-    } catch (err) {
-      setError(err?.response?.data?.message || 'Google sign in failed. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
+  const handleGoogleLogin = () => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    const redirectUri = encodeURIComponent(import.meta.env.VITE_GOOGLE_REDIRECT_URI);
+    const scope = encodeURIComponent('openid profile email');
+
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
   };
 
   const handleLinkedInLogin = () => {
@@ -93,30 +87,42 @@ export default function LoginPage() {
         </form>
 
         {/* Visual "OR" Divider */}
-        <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              margin: '24px 0',
-              color: '#94a3b8',
-              fontSize: '12px',
-              letterSpacing: '1px'
-            }}>
-              <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #334155', margin: '0 10px 0 0' }} />
-              <span>OR</span>
-              <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #334155', margin: '0 0 0 10px' }} />
-        </div>
+        <div style={{          display: 'flex',
+          alignItems: 'center',
+          margin: '24px 0',
+          color: '#94a3b8',
+          fontSize: '12px',
+          letterSpacing: '1px'
+        }}>
+          <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #334155', margin: '0 10px 0 0' }} />
+          <span>OR</span>
+          <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #334155', margin: '0 0 0 10px' }} />    </div>
 
-        {/* Google Login Button */}
+        {/* Custom Google Login Button */}
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={() => setError('Google popup closed or failed. Please try again.')}
-            useOneTap
-            theme="filled_black"
-            shape="rectangular"
-            size="large"
-            text="signin_with"
-          />
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              height: '40px', minWidth: '187px', padding: '0 12px',
+              backgroundColor: '#ffffff', color: '#3c4043', // Google brand colors
+              border: '1px solid #dadce0', borderRadius: '4px',
+              fontSize: '14px', fontWeight: '500', fontFamily: 'Roboto, Arial, sans-serif',
+              cursor: 'pointer', transition: 'background-color 0.2s',
+              boxShadow: '0 1px 2px 0 rgba(60,64,67,0.3)'
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#f8f9fa')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
+          >
+            <svg style={{ width: '18px', height: '18px', marginRight: '10px' }} viewBox="0 0 48 48">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Sign in with Google
+          </button>
         </div>
 
         {/* LinkedIn Login Button */}
