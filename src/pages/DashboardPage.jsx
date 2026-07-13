@@ -65,7 +65,10 @@ export default function DashboardPage() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
 
   // Check if user has permission to see JD actions
-  const hasJdAccess = user && user.roles && user.roles.some(role => ['TESTER', 'ADMIN'].includes(role));
+  const allowedJdRoles = import.meta.env.VITE_JD_ACCESS_ROLES
+    ? import.meta.env.VITE_JD_ACCESS_ROLES.split(',').map(role => role.trim())
+    : [];
+  const hasJdAccess = user && user.roles && user.roles.some(role => allowedJdRoles.includes(role));
 
   const loadDashboardData = () => {
     setLoadingStats(true);

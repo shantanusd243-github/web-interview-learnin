@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useUpdateProgress, useToggleBookmark } from '../hooks/useUserActivity';
 import { priorityBadgeClass, difficultyBadgeClass, STATUS_LABELS, STATUS_CLASSES, nextStatus } from '../utils/badges';
 import { getNote, saveNote, deleteNote, saveHighlight, deleteHighlight, getHighlights } from '../api/userActivity';
@@ -89,7 +90,8 @@ export default function QuestionCard({ q }) {
   const { user } = useAuth();
   const updateProgress = useUpdateProgress();
   const toggleBookmark = useToggleBookmark();
-
+  const navigate = useNavigate();
+  const location = useLocation();
   // --- THE FIX: Local state so the UI updates instantly with Infinite Scroll ---
   const [localStatus, setLocalStatus] = useState(q.userProgressStatus || 'NOT_STARTED');
   const [localBookmarked, setLocalBookmarked] = useState(!!q.bookmarked);
@@ -99,6 +101,60 @@ export default function QuestionCard({ q }) {
     setLocalStatus(q.userProgressStatus || 'NOT_STARTED');
     setLocalBookmarked(!!q.bookmarked);
   }, [q.userProgressStatus, q.bookmarked]);
+
+    // 1. Listen for returning users to execute the pending action
+    useEffect(() => {
+      // Only run if the user is logged in
+      if (user) {
+        const pendingActionStr = sessionStorage.getItem('pendingAction');
+
+        if (pendingActionStr) {
+          const pendingAction = JSON.parse(pendingActionStr);
+
+          // FIX: Use q.id instead of question.id
+          if (pendingAction.questionId === q.id) {
+            // Clear it immediately so it doesn't run twice
+            sessionStorage.removeItem('pendingAction');
+
+            // Execute the intended action (simulate the event object if needed)
+            if (pendingAction.type === 'BOOKMARK') {
+              handleBookmarkClick({ stopPropagation: () => {} });
+            } else if (pendingAction.type === 'UPDATE_STATUS') {
+              handleStatusClick({ stopPropagation: () => {} });
+            }
+          }
+        }
+      }
+    }, [user, q.id]);
+
+    const onBookmarkClick = (e) => {
+      e.stopPropagation();
+      if (!user) {
+        // FIX: Use q.id instead of question.id
+        sessionStorage.setItem('pendingAction', JSON.stringify({ type: 'BOOKMARK', questionId: q.id }));
+        sessionStorage.setItem('returnUrl', location.pathname + location.search);
+        navigate('/login');
+        return;
+      }
+
+      handleBookmarkClick(e);
+    };
+
+    const onStatusClick = (e) => {
+      e.stopPropagation();
+      if (!user) {
+        // FIX: Use q.id instead of question.id
+        sessionStorage.setItem('pendingAction', JSON.stringify({
+          type: 'UPDATE_STATUS',
+          questionId: q.id
+        }));
+        sessionStorage.setItem('returnUrl', location.pathname + location.search);
+        navigate('/login');
+        return;
+      }
+
+      handleStatusClick(e);
+    };
 
   const title = q.title || q.q;
   const [note, setNote] = useState('');
@@ -290,16 +346,13 @@ useEffect(() => {
         </div>
 
         {/* USING LOCAL STATE HERE SO IT FEELS INSTANT */}
-        {user && (
-          <button className="status-btn" style={{ borderColor: 'inherit' }} onClick={handleBookmarkClick} title="Bookmark">
-            {localBookmarked ? '🔖' : '📑'}
-          </button>
-        )}
-        {user && (
-          <button className={`status-btn ${STATUS_CLASSES[localStatus]}`} onClick={handleStatusClick}>
-            {STATUS_LABELS[localStatus]}
-          </button>
-        )}
+        <button className="status-btn" style={{ borderColor: 'inherit' }} onClick={onBookmarkClick} title="Bookmark">
+          {localBookmarked ? '🔖' : '📑'}
+        </button>
+
+        <button className={`status-btn ${STATUS_CLASSES[localStatus]}`} onClick={onStatusClick}>
+          {STATUS_LABELS[localStatus]}
+        </button>
         <span className="chevron">▾</span>
       </div>
 

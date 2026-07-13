@@ -23,8 +23,19 @@ export default function GoogleCallbackPage() {
       }
 
       try {
+        // 1. Wait for the login to succeed
         await googleLogin(code);
-        navigate('/dashboard');
+
+        // 2. Check if there's a saved return URL
+        const returnUrl = sessionStorage.getItem('returnUrl');
+
+        // 3. Redirect accordingly
+        if (returnUrl) {
+          sessionStorage.removeItem('returnUrl');
+          navigate(returnUrl, { replace: true }); // use replace to avoid extra back-button history
+        } else {
+          navigate('/dashboard', { replace: true });
+        }
       } catch (error) {
         console.error('Google Auth Error:', error);
         navigate('/login', { state: { error: 'Google authentication failed.' } });
