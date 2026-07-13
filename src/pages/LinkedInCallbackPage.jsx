@@ -20,7 +20,7 @@ export default function LinkedInCallbackPage() {
 
     if (errorParam) {
       setError('LinkedIn authentication was cancelled or failed.');
-      setTimeout(() => navigate('/login'), 3000);
+      setTimeout(() => navigate('/login', { replace: true }), 3000);
       return;
     }
 
@@ -32,20 +32,29 @@ export default function LinkedInCallbackPage() {
 
         linkedinLogin(code)
           .then(() => {
-            navigate('/dashboard');
+            // Check if there's a saved return URL
+            const returnUrl = sessionStorage.getItem('returnUrl');
+
+            // Redirect accordingly
+            if (returnUrl) {
+              sessionStorage.removeItem('returnUrl');
+              navigate(returnUrl, { replace: true });
+            } else {
+              navigate('/dashboard', { replace: true });
+            }
           })
           .catch((err) => {
             setIsProcessing(false);
             hasAttempted.current = false; // Allow retry on failure
             console.error('LinkedIn authentication failed', err);
             setError('Failed to securely log in with LinkedIn.');
-            setTimeout(() => navigate('/login'), 3000);
+            setTimeout(() => navigate('/login', { replace: true }), 3000);
           });
       }
       // Notice there is NO 'else' here. If code exists and we are processing, just wait.
     } else {
       // If there is absolutely no code in the URL, send them away.
-      navigate('/login');
+      navigate('/login', { replace: true });
     }
   }, [location, linkedinLogin, navigate]);
 

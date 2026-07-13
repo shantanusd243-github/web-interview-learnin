@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './components/AppLayout';
-import { ProtectedRoute, AdminRoute, PublicRoute } from './components/guards';
+import { ProtectedRoute, AdminRoute, PublicRoute, ConfigurableAuthRoute } from './components/guards';
 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -30,8 +30,12 @@ export default function App() {
     <HelmetProvider>
       <Routes>
         {/* Public Auth Pages (No Sidebar/Layout) */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={
+          <PublicRoute><LoginPage /></PublicRoute>
+        } />
+        <Route path="/register" element={
+          <PublicRoute><RegisterPage /></PublicRoute>
+        } />
         <Route path="/forgot-password" element={
           <PublicRoute><ForgotPasswordPage /></PublicRoute>
         } />
@@ -50,11 +54,15 @@ export default function App() {
           <Route path="/cheat" element={<CheatSheetPage />} />
           <Route path="/reference/:pageKey" element={<ReferencePage />} />
 
+          {/* 🎛️ Configurable Routes: Public or Protected based on .env */}
+        <Route element={<ConfigurableAuthRoute />}>
+          <Route path="/questions" element={<QuestionsPage />} />
+          <Route path="/dsa" element={<DsaPage />} />
+          <Route path="/sysdesign" element={<SystemDesignPage />} />
+        </Route>
+
           {/* 🔒 Protected Routes: Redirects to Login if not authenticated */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/questions" element={<QuestionsPage />} />
-            <Route path="/dsa" element={<DsaPage />} />
-            <Route path="/sysdesign" element={<SystemDesignPage />} />
             <Route path="/bookmarks" element={<BookmarksPage />} />
             <Route path="/submit" element={<SubmitQuestionPage />} />
           </Route>

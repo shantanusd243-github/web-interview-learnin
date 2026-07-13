@@ -44,6 +44,17 @@ export default function LoginPage() {
     }
   };
 
+    const handleLoginSuccess = () => {
+      const returnUrl = sessionStorage.getItem('returnUrl');
+
+      if (returnUrl) {
+        sessionStorage.removeItem('returnUrl'); // Clean up
+        navigate(returnUrl); // Send them back to where they clicked the bookmark
+      } else {
+        navigate('/dashboard'); // Default fallback
+      }
+    };
+
   const handleGoogleLogin = async () => {
     // Escape Hatch Logic
     if (inAppBrowser.isWebView) {
