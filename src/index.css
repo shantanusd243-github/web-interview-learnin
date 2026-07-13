@@ -997,3 +997,26 @@ body {
     justify-content: flex-start; /* Keeps the dropdown neatly on the left side */
   }
 }
+
+.persistent-scrollbar {
+  overflow-x: auto;
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: #cbd5e1 transparent; /* For Firefox */
+  padding-bottom: 8px; /* Adds space so the scrollbar doesn't overlap your text */
+}
+
+/* For Chrome, Safari, Edge, iOS, and Android WebKit */
+.persistent-scrollbar::-webkit-scrollbar {
+  height: 6px; /* For horizontal scrollbars */
+  width: 6px;  /* ADD THIS: For vertical scrollbars */
+  -webkit-appearance: none;
+}
+
+.persistent-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.persistent-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1; /* A nice visible gray (Tailwind slate-300) */
+  border-radius: 10px;
+}
