@@ -142,7 +142,7 @@ export default function DsaPage() {
         <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
 
           {/* Left Side: Dynamic Wrapping Chips */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', flex: 1, maxHeight: '82px', overflowY: 'auto', alignContent: 'flex-start', paddingRight: '4px' }}>
+            <div className="persistent-scrollbar" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', flex: 1, maxHeight: '82px', overflowY: 'auto', alignContent: 'flex-start', paddingRight: '4px' }}>
             <button className={`filter-chip${week === 'all' ? ' active' : ''}`} onClick={() => setWeek('all')}>All</button>
             {availableWeeks.map((w) => (
               <button key={w} className={`filter-chip${week === w ? ' active' : ''}`} onClick={() => setWeek(w)}>{w}</button>

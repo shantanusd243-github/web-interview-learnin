@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useFilters } from '../context/FilterContext';
 import { getDashboardSummary } from '../api/userActivity';
 import { useTopics } from '../hooks/useQuestions';
@@ -47,9 +47,10 @@ const formatRelativeTime = (dateString) => {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
   const { setTopicFilter } = useFilters();
   const { data: dbTopics, isLoading: loadingTopics } = useTopics();
-  const { user } = useAuth();
   const [stats, setStats] = useState({ totalQuestions: 0, confidentCount: 0, revisingCount: 0, weakCount: 0, topicCounts: {} });
   const [loadingStats, setLoadingStats] = useState(true);
   const [isJdModalOpen, setIsJdModalOpen] = useState(false);
@@ -81,6 +82,22 @@ export default function DashboardPage() {
       setJdPlan(planData?.data || null);
       setJdHistory(historyData || []);
     }).finally(() => setLoadingStats(false));
+  };
+
+  const handleProtectedClick = (e, originalFunction) => {
+    if (e) e.stopPropagation();
+
+    if (!user) {
+      // Save where they were so the Login page sends them back to /dashboard
+      sessionStorage.setItem('returnUrl', location.pathname + location.search);
+      navigate('/login');
+      return;
+    }
+
+    // If they are logged in, run the normal function
+    if (originalFunction) {
+      originalFunction(e);
+    }
   };
 
   useEffect(() => {
@@ -204,7 +221,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Right: Actions wrapper that automatically stacks on mobile screen sizes */}
-        {hasJdAccess && (
+        {/* FIX: Let guests see the buttons so we can intercept them! */}
+        {(!user || hasJdAccess) && (
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -219,7 +237,7 @@ export default function DashboardPage() {
             <div style={{ position: 'relative', flex: isMobile ? '1 1 0%' : 'initial' }} ref={dropdownRef}>
               <button
                 className="btn btn-secondary"
-                onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+                onClick={(e) => handleProtectedClick(e, () => setIsHistoryOpen(!isHistoryOpen))}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                   borderRadius: '8px', padding: '8px 14px',
@@ -254,7 +272,6 @@ export default function DashboardPage() {
                   right: isMobile ? 'auto' : 0,
 
                   padding: 0,
-                  // FIX: Removed '100vw' dependency. Using a safe solid pixel width for mobile.
                   width: isMobile ? '300px' : '320px',
                   zIndex: 999, // Extreme Z-Index to prevent being hidden under other cards
 
@@ -322,10 +339,10 @@ export default function DashboardPage() {
 
                   <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
                     <button
-                      onClick={() => {
+                      onClick={(e) => handleProtectedClick(e, () => {
                         setIsHistoryOpen(false);
                         setIsJdModalOpen(true);
-                      }}
+                      })}
                       style={{
                         width: '100%', textAlign: 'center', backgroundColor: 'rgba(79, 70, 229, 0.1)',
                         border: 'none', borderRadius: '6px', fontSize: '12px', color: '#4f46e5', fontWeight: 600,
@@ -344,14 +361,7 @@ export default function DashboardPage() {
             {/* Primary action button */}
             <button
               className="btn btn-primary"
-              onClick={() => {
-                if (user) {
-                  setIsJdModalOpen(true);
-                } else {
-                  localStorage.setItem('pendingJdModal', 'true');
-                  navigate('/login');
-                }
-              }}
+              onClick={(e) => handleProtectedClick(e, () => setIsJdModalOpen(true))}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                 padding: '8px 16px', borderRadius: '8px',

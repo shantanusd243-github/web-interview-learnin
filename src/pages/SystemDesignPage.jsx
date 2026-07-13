@@ -105,8 +105,8 @@ export default function SystemDesignPage() {
           </div>
         </div>
 
-         <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', flex: 1, maxHeight: '82px', overflowY: 'auto', alignContent: 'flex-start', paddingRight: '4px' }}>
+          <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
+            <div className="persistent-scrollbar" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', flex: 1, maxHeight: '82px', overflowY: 'auto', alignContent: 'flex-start', paddingRight: '4px' }}>
               <button className={`filter-chip${cat === 'all' ? ' active' : ''}`} onClick={() => setCat('all')}>All</button>
               {availableCategories.map((c) => (
                 <button key={c} className={`filter-chip${cat === c ? ' active' : ''}`} onClick={() => setCat(c)}>
