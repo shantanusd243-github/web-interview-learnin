@@ -20,9 +20,11 @@ export const progressApi = {
 };
 
 export const mockInterviewApi = {
-  next: () => apiClient.get('/mock-interview/next').then((r) => r.data),
-  mark: (data) => apiClient.post('/mock-interview/mark', data).then((r) => r.data),
-  history: () => apiClient.get('/mock-interview/history').then((r) => r.data),
+  // Pass the params object which will be converted to query parameters
+  start: (params) => apiClient.post('/mock-interviews/start', null, { params }).then((r) => r.data),
+
+  mark: (data) => apiClient.post('/mock-interviews/mark', data).then((r) => r.data),
+  history: () => apiClient.get('/mock-interviews/history').then((r) => r.data),
 };
 
 // --- REMOVED /api FROM ALL ENDPOINTS BELOW ---

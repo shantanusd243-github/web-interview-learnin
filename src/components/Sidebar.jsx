@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useFilters } from '../context/FilterContext';
 
 const NAV_GROUPS = [
   {
@@ -47,8 +48,21 @@ const ADMIN_GROUP = {
 
 export default function Sidebar({ open, onClose }) {
   const { user, logout } = useAuth();
+  const { topic, setTopic } = useFilters();
   const isAdmin = user?.roles?.includes('ADMIN');
   const groups = isAdmin ? [...NAV_GROUPS, ADMIN_GROUP] : NAV_GROUPS;
+
+    const handleNavClick = (path) => {
+        // If navigating to Questions tab, scrub "DSA" or "System Design" from the global filter
+        if (path === '/questions' && (topic === 'DSA' || topic === 'System Design')) {
+          setTopic('');
+        }
+        // Also scrub it if they explicitly navigate to the standalone DSA/SysDesign pages
+        else if (path === '/dsa' || path === '/sysdesign') {
+          setTopic('');
+        }
+        onClose(); // Close the sidebar as usual
+  };
 
   return (
     <div className={`sidebar${open ? ' open' : ''}`} id="sidebar">
@@ -63,7 +77,7 @@ export default function Sidebar({ open, onClose }) {
             <NavLink
               key={item.to}
               to={item.to}
-              onClick={onClose}
+              onClick={() => handleNavClick(item.to)}
               className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
             >
               <span className="icon">{item.icon}</span> {item.label}

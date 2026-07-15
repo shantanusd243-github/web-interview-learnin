@@ -24,7 +24,7 @@ function formatPriorityUI(apiPriority) {
   return map[apiPriority] || apiPriority;
 }
 
-function QuestionBody({ q }) {
+export function QuestionBody({ q }) {
   if (q.questionType === 'DSA') {
     return (
       <div className="q-answer">

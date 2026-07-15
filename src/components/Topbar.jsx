@@ -1,8 +1,9 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTopics } from '../hooks/useQuestions';
 import { useFilters } from '../context/FilterContext';
-import ThemeToggle from './ThemeToggle'; // <-- 1. ADD THIS IMPORT
+import ThemeToggle from './ThemeToggle';
 import SleekDropdown from './SleekDropdown';
+
 const PRIORITY_LABELS = ['All Priority', 'Must Know', 'Important', 'Nice to Know'];
 
 const priorityToApi = {
@@ -44,14 +45,30 @@ export default function Topbar({ onToggleSidebar }) {
     return false;
   });
 
-  const handleTopicChange = (e) => {
-    const val = e.target.value;
-    if      (val === 'DSA')           { setTopic(''); navigate('/dsa'); }
-    else if (val === 'System Design') { setTopic(''); navigate('/sysdesign'); }
-    else { setTopic(val === 'All Topics' ? '' : val); navigate('/questions'); }
+  const handleTopicChange = (val) => {
+    // 1. Check if we are on the mock interview page
+    const isMockInterviewPage = location.pathname.includes('/mock');
+
+    // 2. If on the mock page, just update the filter state and DO NOT redirect
+    if (isMockInterviewPage) {
+      setTopic(val === 'All Topics' ? '' : val);
+      return;
+    }
+
+    // 3. Existing redirect logic for all other pages
+    if (val === 'DSA') {
+      setTopic('');
+      navigate('/dsa');
+    } else if (val === 'System Design') {
+      setTopic('');
+      navigate('/sysdesign');
+    } else {
+      setTopic(val === 'All Topics' ? '' : val);
+      navigate('/questions');
+    }
   };
 
-return (
+  return (
     <div className="topbar">
       <button className="hamburger" onClick={onToggleSidebar} aria-label="Toggle menu">
         ☰
@@ -77,15 +94,11 @@ return (
 
       <div className="topbar-filters" style={{ display: 'flex', gap: '10px' }}>
 
-        {/* Topic Dropdown */}
+        {/* Topic Dropdown - Uses the updated handler */}
         <SleekDropdown
           value={currentValue}
           options={['All Topics', 'DSA', 'System Design', ...theoryTopics.map(t => typeof t === 'object' ? (t.name || t.topic) : t)]}
-          onChange={(val) => {
-            if (val === 'DSA') { setTopic(''); navigate('/dsa'); }
-            else if (val === 'System Design') { setTopic(''); navigate('/sysdesign'); }
-            else { setTopic(val === 'All Topics' ? '' : val); navigate('/questions'); }
-          }}
+          onChange={handleTopicChange}
           placeholder="All Topics"
         />
 
